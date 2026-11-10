@@ -9,8 +9,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Atelier">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#F3F4F1" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0F1311" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FFF1F5">
+<meta name="color-scheme" content="light only">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -20,53 +20,32 @@
 <style>
 /* Mise en page : une colonne au téléphone (le mois, deux onglets, les fiches, le bouton d'ajout sous le pouce).
    Sur grand écran, le mois passe dans une colonne fixe à gauche et les fiches à droite. */
+/* Rose et blanc, toujours clair (pas de mode sombre). */
 :root {
-  --bg: #F3F4F1;
-  --bg-0: rgba(243, 244, 241, 0);
+  --bg: #FFF1F5;
+  --bg-0: rgba(255, 241, 245, 0);
   --surface: #FFFFFF;
-  --surface-2: #E8EBE6;
-  --ink: #141A17;
-  --ink-soft: #5C6862;
-  --line: #DDE1DC;
-  --line-strong: #B7C0B9;
-  --done: #1F9D63;
+  --surface-2: #FBE4EC;
+  --ink: #3D1428;
+  --ink-soft: #8A4A63;
+  --line: #F5D3DF;
+  --line-strong: #E8A9C0;
+  --accent: #D6336C;
+  --accent-ink: #FFFFFF;
+  --done: #D6336C;
   --done-ink: #FFFFFF;
-  --done-text: #15784A;
-  --gold: #8A5B00;
-  --gold-bg: #FFF0C7;
-  --late: #C2372A;
-  --late-bg: #FBE6E2;
-  --live: #E5484D;
+  --done-text: #B01F57;
+  --gold: #9E1B4F;
+  --gold-bg: #FFCFE0;
+  --late: #B42335;
+  --late-bg: #FFE1E4;
+  --live: #F03E6E;
   --knob: #FFFFFF;
-  --backdrop: rgba(12, 18, 15, .5);
-  --shadow: 0 1px 2px rgba(20, 26, 23, .04), 0 10px 30px rgba(20, 26, 23, .06);
+  --backdrop: rgba(61, 20, 40, .45);
+  --shadow: 0 1px 2px rgba(120, 30, 70, .05), 0 10px 30px rgba(120, 30, 70, .08);
   --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --font-body: "Figtree", -apple-system, "Segoe UI", system-ui, sans-serif;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0F1311;
-    --bg-0: rgba(15, 19, 17, 0);
-    --surface: #1A201D;
-    --surface-2: #262D29;
-    --ink: #EEF2EE;
-    --ink-soft: #9BA8A1;
-    --line: #2C3530;
-    --line-strong: #4A5750;
-    --done: #36B87A;
-    --done-ink: #06140D;
-    --done-text: #6FD9A5;
-    --gold: #F3CE6B;
-    --gold-bg: #3E3212;
-    --late: #FF8D7C;
-    --late-bg: #47211C;
-    --live: #FF6369;
-    --knob: #FFFFFF;
-    --backdrop: rgba(0, 0, 0, .62);
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .25);
-    color-scheme: dark;
-  }
+  color-scheme: light only;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -144,7 +123,7 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
   border: 0; border-radius: 12px; background: none; font-size: 15.5px; font-weight: 600; color: var(--ink-soft);
 }
 .onglet .nb { font-weight: 500; font-variant-numeric: tabular-nums; opacity: .75; }
-.onglet[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .1); }
+.onglet[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(120, 30, 70, .14); }
 
 .etat, .vide { margin: 0; color: var(--ink-soft); font-size: 15.5px; }
 .etat { padding: 14px 16px; border-radius: 16px; background: var(--late-bg); color: var(--late); font-weight: 600; }
@@ -162,7 +141,7 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
 .abandon .oui { background: var(--late); color: var(--surface); }
 .abandon .non { background: var(--surface); color: var(--ink); }
 .enregistrer-bas {
-  min-height: 56px; border: 0; border-radius: 28px; background: var(--ink); color: var(--bg);
+  min-height: 56px; border: 0; border-radius: 28px; background: var(--accent); color: var(--accent-ink);
   font: 700 17px/1 var(--font-display);
 }
 
@@ -203,7 +182,7 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
   border: 0; border-radius: 22px; background: var(--surface-2);
   font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;
 }
-.chrono-btn.actif { background: var(--ink); color: var(--bg); }
+.chrono-btn.actif { background: var(--accent); color: var(--accent-ink); }
 .temps-bloc {
   display: flex; flex-direction: column; justify-content: center; gap: 1px; min-height: 44px; padding: 0 6px;
   border: 0; border-radius: 10px; background: none; text-align: left;
@@ -238,8 +217,8 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
 .quai > * { pointer-events: auto; width: 100%; max-width: 440px; }
 .ajouter {
   display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px;
-  border: 0; border-radius: 28px; background: var(--ink); color: var(--bg);
-  font: 700 17.5px/1 var(--font-display); box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+  border: 0; border-radius: 28px; background: var(--accent); color: var(--accent-ink);
+  font: 700 17.5px/1 var(--font-display); box-shadow: 0 8px 24px rgba(214, 51, 108, .35);
 }
 .ajouter .plus { font-size: 24px; font-weight: 500; line-height: 1; margin-top: -2px; }
 .chrono-barre {
@@ -252,7 +231,7 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
 .chrono-barre .temps { font: 700 17px/1 var(--font-display); font-variant-numeric: tabular-nums; }
 .chrono-barre button {
   min-height: 48px; padding: 0 18px; border: 0; border-radius: 24px;
-  background: var(--ink); color: var(--bg); font-weight: 700; font-size: 15px;
+  background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 15px;
 }
 
 /* Bravo : la petite récompense, en haut de l'écran */
@@ -294,9 +273,9 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
 .money-chat .etincelle { transform-box: fill-box; transform-origin: center; }
 .money-texte {
   margin: 0; display: flex; white-space: nowrap;
-  font: 800 clamp(32px, 10.5vw, 44px)/1.1 var(--font-display); letter-spacing: -.01em; color: #FFD23F;
-  text-shadow: 3px 0 #1D1A0C, -3px 0 #1D1A0C, 0 3px #1D1A0C, 0 -3px #1D1A0C,
-    2px 2px #1D1A0C, -2px 2px #1D1A0C, 2px -2px #1D1A0C, -2px -2px #1D1A0C, 0 7px 0 rgba(0, 0, 0, .22);
+  font: 800 clamp(32px, 10.5vw, 44px)/1.1 var(--font-display); letter-spacing: -.01em; color: #FFFFFF;
+  text-shadow: 3px 0 #C2185B, -3px 0 #C2185B, 0 3px #C2185B, 0 -3px #C2185B,
+    2px 2px #C2185B, -2px 2px #C2185B, 2px -2px #C2185B, -2px -2px #C2185B, 0 7px 0 rgba(0, 0, 0, .22);
 }
 .money-texte span { display: inline-block; }
 .money-texte .espace { width: .28em; }
@@ -318,7 +297,7 @@ dialog::backdrop { background: var(--backdrop); }
 .feuille-tete h2 { margin: 0; min-width: 0; text-align: center; font: 700 17px/1.2 var(--font-display); }
 .feuille-tete .annuler { min-height: 44px; padding: 0 6px; border: 0; background: none; font-weight: 600; color: var(--ink-soft); }
 .feuille-tete .enregistrer {
-  min-height: 44px; padding: 0 18px; border: 0; border-radius: 22px; background: var(--ink); color: var(--bg); font-weight: 700;
+  min-height: 44px; padding: 0 18px; border: 0; border-radius: 22px; background: var(--accent); color: var(--accent-ink); font-weight: 700;
 }
 .feuille-corps {
   flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
@@ -333,7 +312,7 @@ dialog::backdrop { background: var(--backdrop); }
   border: 1.5px solid transparent; border-radius: 14px; background: var(--surface); font-size: 17px;
   box-shadow: inset 0 0 0 1px var(--line);
 }
-.saisie:focus { outline: none; border-color: var(--ink); box-shadow: none; }
+.saisie:focus { outline: none; border-color: var(--accent); box-shadow: none; }
 textarea.saisie { min-height: 96px; line-height: 1.4; resize: vertical; }
 .saisie::placeholder { color: var(--ink-soft); opacity: .7; }
 .erreur { margin: 0; padding: 12px 14px; border-radius: 14px; background: var(--late-bg); color: var(--late); font-weight: 600; font-size: 14.5px; }
@@ -344,7 +323,7 @@ textarea.saisie { min-height: 96px; line-height: 1.4; resize: vertical; }
   min-height: 44px; padding: 0 16px; border: 0; border-radius: 22px; background: var(--surface-2);
   font-size: 15px; font-weight: 600; white-space: nowrap; cursor: pointer;
 }
-.puce.forte, .puce[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.puce.forte, .puce[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
 .sr:focus-visible + .puce, .puce:has(+ .sr:focus-visible) { outline: 2.5px solid var(--ink); outline-offset: 2px; }
 
 .avec-unite { position: relative; }
@@ -413,7 +392,7 @@ dialog.petit p { margin: 0; }
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .actions button { min-height: 52px; border: 0; border-radius: 26px; font-weight: 700; }
 .actions .annuler { background: var(--surface-2); }
-.actions .valider { background: var(--ink); color: var(--bg); }
+.actions .valider { background: var(--accent); color: var(--accent-ink); }
 
 @media (prefers-reduced-motion: no-preference) {
   .onglet, .taux, .chrono-btn, .payer, .fixer, .tag-paye, .ajouter, .puce, .coche-fin, .chrono-barre button, .actions button, .enregistrer {
@@ -544,9 +523,9 @@ dialog.petit p { margin: 0; }
   <div class="money-chat">
     <svg viewBox="0 0 160 150">
       <!-- étincelles -->
-      <path class="etincelle" style="--d:0s" d="M22 30 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#FFD23F"/>
-      <path class="etincelle" style="--d:.25s" d="M146 14 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5 Z" fill="#FFD23F"/>
-      <path class="etincelle" style="--d:.45s" d="M14 96 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 Z" fill="#FFD23F"/>
+      <path class="etincelle" style="--d:0s" d="M22 30 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#FF8FB1"/>
+      <path class="etincelle" style="--d:.25s" d="M146 14 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5 Z" fill="#FF8FB1"/>
+      <path class="etincelle" style="--d:.45s" d="M14 96 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 Z" fill="#FF8FB1"/>
       <!-- queue -->
       <g class="queue">
         <path d="M50 126 C 20 130, 12 102, 26 92" fill="none" stroke="#3B2A22" stroke-width="15" stroke-linecap="round"/>
@@ -982,7 +961,7 @@ dialog.petit p { margin: 0; }
   });
 
   /* ---------- La fête : boutons et chutes de tissu, ou pièces ---------- */
-  const TEINTES = ["#E4572E", "#F2B134", "#2E9E6B", "#3A6FD8", "#C95D9B", "#7A5AC8"];
+  const TEINTES = ["#E8467C", "#FF8FB1", "#C2185B", "#F06292", "#D6336C", "#FFB3C9"];
   const toile = $("fete");
   const ctx = toile.getContext ? toile.getContext("2d") : null;
   let grains = [], rafFete = 0, tPrec = 0;
