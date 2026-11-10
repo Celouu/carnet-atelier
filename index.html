@@ -1128,6 +1128,35 @@ dialog.petit p { margin: 0; }
     grains = grains.filter((g) => g.forme !== "billet" && g.forme !== "piece");
   }
 
+  /* ---------- Vibration quand un paiement est coché ---------- */
+  // Android : navigator.vibrate. iPhone : Safari n'a pas cette fonction, mais depuis iOS 18
+  // il fait vibrer le téléphone quand un interrupteur natif bascule ; on en bascule un, invisible.
+  const tactile = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  function tapotis() {
+    if (!tactile) return;
+    try {
+      const lab = document.createElement("label");
+      lab.setAttribute("aria-hidden", "true");
+      lab.style.display = "none";
+      const inter = document.createElement("input");
+      inter.type = "checkbox";
+      inter.setAttribute("switch", "");
+      lab.append(inter);
+      // Dans la fiche ouverte, le reste de la page est inerte : l'interrupteur doit être dedans.
+      (document.querySelector("dialog[open]") || document.body).append(lab);
+      lab.click();
+      lab.remove();
+    } catch (e) { /* pas de vibration, tant pis */ }
+  }
+  function vibrerPaiement() {
+    try {
+      if (typeof navigator.vibrate === "function") { navigator.vibrate([35, 60, 35, 60, 90]); return; }
+    } catch (e) { /* rien */ }
+    tapotis();
+    setTimeout(tapotis, 110);
+    setTimeout(tapotis, 220);
+  }
+
   function centreDe(elm) {
     if (!elm || !elm.getBoundingClientRect) return { x: window.innerWidth / 2, y: window.innerHeight * 0.35 };
     const r = elm.getBoundingClientRect();
@@ -1362,6 +1391,7 @@ dialog.petit p { margin: 0; }
   function payer(id, bouton) {
     const p = trouver(id);
     if (!p || p.prix == null) return;
+    vibrerPaiement();
     state.pop = id;
     setTimeout(() => { if (state.pop === id) state.pop = null; }, 1200);
     feterPaye(bouton, p.prix, false, () => {
@@ -1667,6 +1697,7 @@ dialog.petit p { margin: 0; }
     else if (paye && !etaitPaye && prix) feterPaye(null, prix, true);
   });
 
+  $("fPaye").addEventListener("change", () => { if ($("fPaye").checked) vibrerPaiement(); });
   $("btnAnnuler").addEventListener("click", demanderFermeture);
   feuille.addEventListener("cancel", (e) => { e.preventDefault(); demanderFermeture(); }); // touche Échap
   $("btnAbandonOui").addEventListener("click", () => fermerDialogue(feuille));
