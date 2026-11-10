@@ -168,6 +168,18 @@ h1 .signature { color: var(--accent); }
 .fiche.faite .rond, .fiche.en-fete .rond { background: var(--done); border-color: var(--done); }
 .fiche.faite .rond svg, .fiche.en-fete .rond svg { stroke-dashoffset: 0; }
 .fiche-contenu { display: flex; flex-direction: column; min-width: 0; }
+
+/* Priorités : la poignée en haut à droite de la fiche, qu'on glisse pour changer l'ordre */
+.fiche { position: relative; }
+.fiche.deplacable .fiche-ouvrir { padding-right: 40px; }
+.poignee {
+  position: absolute; top: 6px; right: 4px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  border: 0; border-radius: 12px; background: none; color: var(--ink-soft); opacity: .7;
+  touch-action: none; cursor: grab; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+.poignee svg { width: 22px; height: 22px; }
+.fiche.prise { z-index: 4; transition: none; box-shadow: 0 16px 36px rgba(120, 30, 70, .3); cursor: grabbing; }
+body.glisse { -webkit-user-select: none; user-select: none; cursor: grabbing; }
 .fiche-ouvrir {
   display: flex; flex-direction: column; justify-content: center; gap: 3px; width: 100%; min-height: 48px;
   padding: 4px 0; border: 0; border-radius: 8px; background: none; text-align: left;
@@ -902,6 +914,8 @@ dialog.bienvenue::backdrop { background: transparent; }
             cout: typeof f.cout === "number" && isFinite(f.cout) && f.cout >= 0 ? Math.round(f.cout * 100) / 100 : null,
           }))
         : [],
+      // Place dans la liste « À faire » choisie en déplaçant les fiches ; null tant qu'on n'a rien déplacé.
+      rang: typeof d.rang === "number" && isFinite(d.rang) ? d.rang : null,
       notes: str(d.notes),
       creeLe: str(d.creeLe),
       majLe: str(d.majLe),
@@ -994,6 +1008,7 @@ dialog.bienvenue::backdrop { background: transparent; }
     coche: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     lecture: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
     pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>',
+    poignee: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1.8"/><circle cx="15" cy="6" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="9" cy="18" r="1.8"/><circle cx="15" cy="18" r="1.8"/></svg>',
   };
   function icone(nom) {
     const s = document.createElement("span");
@@ -1312,7 +1327,7 @@ dialog.bienvenue::backdrop { background: transparent; }
       el("span", { class: "t-val", "data-chrono": tourne ? p.id : null, text: tourne ? horloge(tempsTotal(p)) : dureeCourte(p.tempsMs) }));
   }
 
-  function ficheAFaire(p) {
+  function ficheAFaire(p, deplacable) {
     const q = quand(p);
     const tourne = !!p.chronoDepuis;
     const total = tempsTotal(p);
@@ -1337,10 +1352,14 @@ dialog.bienvenue::backdrop { background: transparent; }
     if (p.prix != null) pied.append(el("span", { class: "prix", text: euros(p.prix) }));
     else if (conseil != null) pied.append(el("span", { class: "prix conseil", "data-conseil": p.id, text: "≈ " + euros(conseil) }));
 
-    return el("li", { class: "fiche", "data-id": p.id },
+    return el("li", { class: "fiche" + (deplacable ? " deplacable" : ""), "data-id": p.id },
       el("button", { type: "button", class: "coche-fin", "data-finir": p.id, "aria-label": "Marquer « " + (p.titre || "ce projet") + " » comme terminé" },
         el("span", { class: "rond" }, icone("coche"))),
-      el("div", { class: "fiche-contenu" }, ouvrir, pied));
+      el("div", { class: "fiche-contenu" }, ouvrir, pied),
+      deplacable ? el("button", {
+        type: "button", class: "poignee", "data-poignee": p.id,
+        "aria-label": "Déplacer « " + (p.titre || "ce projet") + " » (glisser, ou flèches haut et bas)",
+      }, icone("poignee")) : null);
   }
 
   function ficheFaite(p) {
@@ -1372,6 +1391,17 @@ dialog.bienvenue::backdrop { background: transparent; }
     if (da !== db) return da < db ? -1 : 1;
     return a.creeLe < b.creeLe ? -1 : a.creeLe > b.creeLe ? 1 : 0;
   };
+  // Les fiches déplacées à la main passent en premier, dans l'ordre choisi ; les autres suivent, par date.
+  const triAFaire = (a, b) => {
+    if (a.rang != null && b.rang != null && a.rang !== b.rang) return a.rang - b.rang;
+    if ((a.rang == null) !== (b.rang == null)) return a.rang == null ? 1 : -1;
+    return triEcheance(a, b);
+  };
+  // Un nouveau projet se place en dernier, sauf si l'ordre n'a jamais été choisi (il suit alors les dates).
+  function prochainRang() {
+    const r = state.projets.filter((p) => !estFait(p) && p.rang != null).map((p) => p.rang);
+    return r.length ? Math.max.apply(null, r) + 1 : null;
+  }
   const triFaits = (a, b) => {
     // L'ordre ne dépend pas du paiement : une fiche ne saute pas sous le doigt quand on la marque payée.
     return a.termineLe > b.termineLe ? -1 : a.termineLe < b.termineLe ? 1 : 0;
@@ -1380,8 +1410,8 @@ dialog.bienvenue::backdrop { background: transparent; }
   function renderListe() {
     const visibles = state.vue === "termines"
       ? state.projets.filter(estFait).sort(triFaits)
-      : state.projets.filter((p) => !estFait(p)).sort(triEcheance);
-    remplir($("liste"), visibles.map(state.vue === "termines" ? ficheFaite : ficheAFaire));
+      : state.projets.filter((p) => !estFait(p)).sort(triAFaire);
+    remplir($("liste"), visibles.map(state.vue === "termines" ? ficheFaite : (p) => ficheAFaire(p, visibles.length > 1)));
 
     let msg = "";
     if (visibles.length === 0) {
@@ -1842,6 +1872,7 @@ dialog.bienvenue::backdrop { background: transparent; }
       prix: prix,
       paye: paye,
       payeLe: paye ? (etaitPaye && vivant.payeLe ? vivant.payeLe : maintenant) : "",
+      rang: vivant ? vivant.rang : prochainRang(),
       tempsMs: tempsMs,
       chronoDepuis: chronoDepuis,
       fournitures: brouillon.fournitures.map((f) => ({ nom: f.nom, ok: f.ok, cout: typeof f.cout === "number" && isFinite(f.cout) ? f.cout : null })),
@@ -2035,6 +2066,112 @@ dialog.bienvenue::backdrop { background: transparent; }
     aRestaurer = null;
     render();
     annoncer("Sauvegarde restaurée");
+  });
+
+  /* ---------- Priorités : glisser une fiche par sa poignée ---------- */
+  const idsAffiches = () => Array.from($("liste").children).map((n) => n.getAttribute("data-id"));
+
+  // Écrit l'ordre affiché : chaque projet à faire reçoit sa place (0, 1, 2…).
+  function sauverOrdre(ids) {
+    const place = new Map(ids.map((id, i) => [id, i]));
+    const avant = state.projets;
+    state.projets = avant.map((p) => (place.has(p.id) && p.rang !== place.get(p.id) ? Object.assign({}, p, { rang: place.get(p.id) }) : p));
+    if (!ecrire()) {
+      state.projets = avant;
+      render();
+      annoncer(REFUS);
+      return false;
+    }
+    render();
+    return true;
+  }
+
+  let glisse = null;
+  // La fiche suit le doigt ; les autres s'écartent, la fiche prend la place où on la lâche.
+  function majGlisse() {
+    const g = glisse;
+    if (!g || g.fini) return;
+    const li = g.li, liste = $("liste");
+    li.style.transform = "";
+    const autres = Array.from(liste.children).filter((n) => n !== li);
+    const centre = g.y - g.prise + li.offsetHeight / 2;
+    let cible = 0;
+    for (const n of autres) {
+      const r = n.getBoundingClientRect();
+      if (r.top + r.height / 2 < centre) cible++;
+    }
+    const apres = autres[cible] || null;
+    if (apres !== li.nextElementSibling) liste.insertBefore(li, apres);
+    const dy = (g.y - g.prise) - li.getBoundingClientRect().top;
+    li.style.transform = "translateY(" + dy + "px) scale(1.02)";
+  }
+  // Près du haut ou du bas de l'écran, la page défile pour atteindre les autres fiches.
+  function defilerPendantGlisse() {
+    const g = glisse;
+    if (!g || g.fini) return;
+    const bas = window.innerHeight - 150;
+    let v = 0;
+    if (g.y < 90) v = -Math.min(18, Math.ceil((90 - g.y) / 5));
+    else if (g.y > bas) v = Math.min(18, Math.ceil((g.y - bas) / 5));
+    if (v) { window.scrollBy(0, v); majGlisse(); }
+    g.raf = requestAnimationFrame(defilerPendantGlisse);
+  }
+  function finGlisse(annule) {
+    const g = glisse;
+    if (!g || g.fini) return;
+    g.fini = true;
+    cancelAnimationFrame(g.raf);
+    const termine = () => {
+      glisse = null;
+      document.body.classList.remove("glisse");
+      g.li.classList.remove("prise");
+      g.li.style.transform = "";
+      g.li.style.transition = "";
+      const ids = idsAffiches();
+      if (annule) render();
+      else if (ids.join() !== g.avant.join()) sauverOrdre(ids);
+    };
+    if (reduit.matches) { termine(); return; }
+    // La fiche se pose doucement à sa place.
+    g.li.style.transition = "transform .16s ease";
+    g.li.style.transform = "translateY(0) scale(1)";
+    setTimeout(termine, 170);
+  }
+
+  $("liste").addEventListener("pointerdown", (e) => {
+    const b = e.target.closest("[data-poignee]");
+    if (!b || glisse || (e.pointerType === "mouse" && e.button !== 0)) return;
+    e.preventDefault();
+    const li = b.closest(".fiche");
+    try { b.setPointerCapture(e.pointerId); } catch (err) { /* pas grave */ }
+    glisse = { li: li, pointeur: e.pointerId, y: e.clientY, prise: e.clientY - li.getBoundingClientRect().top, avant: idsAffiches(), raf: 0, fini: false };
+    li.classList.add("prise");
+    document.body.classList.add("glisse");
+    majGlisse();
+    glisse.raf = requestAnimationFrame(defilerPendantGlisse);
+  });
+  $("liste").addEventListener("pointermove", (e) => {
+    if (!glisse || glisse.fini || e.pointerId !== glisse.pointeur) return;
+    glisse.y = e.clientY;
+    majGlisse();
+  });
+  $("liste").addEventListener("pointerup", (e) => { if (glisse && e.pointerId === glisse.pointeur) finGlisse(false); });
+  $("liste").addEventListener("pointercancel", (e) => { if (glisse && e.pointerId === glisse.pointeur) finGlisse(true); });
+  // Sans doigt ni souris : flèches haut et bas sur la poignée.
+  $("liste").addEventListener("keydown", (e) => {
+    const b = e.target.closest && e.target.closest("[data-poignee]");
+    const sens = e.key === "ArrowUp" ? -1 : e.key === "ArrowDown" ? 1 : 0;
+    if (!b || !sens || glisse) return;
+    e.preventDefault();
+    const id = b.getAttribute("data-poignee"), ids = idsAffiches();
+    const i = ids.indexOf(id), j = i + sens;
+    if (i < 0 || j < 0 || j >= ids.length) return;
+    ids[i] = ids[j];
+    ids[j] = id;
+    if (sauverOrdre(ids)) {
+      const nouvelle = $("liste").querySelector('[data-poignee="' + id + '"]');
+      if (nouvelle) nouvelle.focus();
+    }
   });
 
   /* ---------- Actions de la page ---------- */
