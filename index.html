@@ -167,7 +167,7 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
 }
 
 @media (hover: hover) {
-  .chrono-btn:hover, .puce:hover, .taux:hover, .fixer:hover, .payer:hover, .discret:hover { filter: brightness(.95); }
+  .chrono-btn:hover, .puce:hover, .taux:hover, .fixer:hover, .payer:hover, .tag-paye:hover, .discret:hover { filter: brightness(.95); }
   .fiche-ouvrir:hover .fiche-titre { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
 }
 
@@ -219,7 +219,7 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
 .payer { background: var(--gold-bg); color: var(--gold); }
 .fixer { background: var(--surface-2); }
 .tag-paye {
-  display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px 0 10px; border-radius: 16px;
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px 0 12px; border: 0; border-radius: 22px;
   background: var(--gold-bg); color: var(--gold); font-size: 14.5px; font-weight: 700;
 }
 .tag-paye svg { width: 14px; height: 14px; }
@@ -416,10 +416,10 @@ dialog.petit p { margin: 0; }
 .actions .valider { background: var(--ink); color: var(--bg); }
 
 @media (prefers-reduced-motion: no-preference) {
-  .onglet, .taux, .chrono-btn, .payer, .fixer, .ajouter, .puce, .coche-fin, .chrono-barre button, .actions button, .enregistrer {
+  .onglet, .taux, .chrono-btn, .payer, .fixer, .tag-paye, .ajouter, .puce, .coche-fin, .chrono-barre button, .actions button, .enregistrer {
     transition: transform .12s ease, background-color .15s ease;
   }
-  .onglet:active, .taux:active, .chrono-btn:active, .payer:active, .fixer:active, .ajouter:active, .puce:active,
+  .onglet:active, .taux:active, .chrono-btn:active, .payer:active, .fixer:active, .tag-paye:active, .ajouter:active, .puce:active,
   .chrono-barre button:active, .actions button:active, .enregistrer:active { transform: scale(.96); }
   .coche-fin:active .rond { transform: scale(.88); }
   .rond { transition: transform .12s ease, background-color .18s ease, border-color .18s ease; }
@@ -1238,7 +1238,10 @@ dialog.petit p { margin: 0; }
     const conseil = p.prix == null ? prixConseille(p.tempsMs) : null;
     if (p.prix != null) pied.append(el("span", { class: "prix", text: euros(p.prix) }));
     else if (conseil != null) pied.append(el("span", { class: "prix conseil", text: "≈ " + euros(conseil) }));
-    if (p.paye) pied.append(el("span", { class: "tag-paye" + (state.pop === p.id ? " pop" : "") }, icone("coche"), "Payé"));
+    if (p.paye) pied.append(el("button", {
+      type: "button", class: "tag-paye" + (state.pop === p.id ? " pop" : ""), "data-depayer": p.id,
+      "aria-label": "Payé. Retirer le paiement",
+    }, icone("coche"), "Payé"));
     else if (p.prix != null) pied.append(el("button", { type: "button", class: "payer", "data-payer": p.id, text: "Marquer payé" }));
     else pied.append(el("button", { type: "button", class: "fixer", "data-fixer": p.id, text: "Fixer le prix" }));
 
@@ -1366,6 +1369,16 @@ dialog.petit p { margin: 0; }
       enregistrerVite(p);
     });
     enregistrerVite(Object.assign({}, p, { paye: true, payeLe: new Date().toISOString() }));
+  }
+
+  // Un appui sur « Payé » retire le paiement, à tout moment (avec « Annuler » au cas où).
+  function depayer(id) {
+    const p = trouver(id);
+    if (!p || !p.paye) return;
+    arreterArgent();
+    if (enregistrerVite(Object.assign({}, p, { paye: false, payeLe: "" }))) {
+      annoncer("Paiement retiré", "", "", () => { enregistrerVite(p); });
+    }
   }
 
   /* ---------- Feuille de saisie ---------- */
@@ -1781,6 +1794,7 @@ dialog.petit p { margin: 0; }
     if ((n = cible("data-finir"))) { terminer(n.getAttribute("data-finir"), n); return; }
     if ((n = cible("data-chrono-btn"))) { basculerChrono(n.getAttribute("data-chrono-btn")); return; }
     if ((n = cible("data-payer"))) { payer(n.getAttribute("data-payer"), n); return; }
+    if ((n = cible("data-depayer"))) { depayer(n.getAttribute("data-depayer")); return; }
     if ((n = cible("data-temps"))) {
       const p = trouver(n.getAttribute("data-temps"));
       if (p) ouvrirFeuille(p, "fHeures");
