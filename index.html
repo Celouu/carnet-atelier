@@ -51,7 +51,9 @@
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
-html:has(dialog[open]) { overflow: hidden; }
+html:has(dialog[open]) { overflow: hidden; overscroll-behavior: none; }
+/* Sur iPhone, une zone qui défile de haut en bas glisse aussi sur les côtés si on ne l'interdit pas. */
+dialog, .feuille-corps { overflow-x: hidden; overscroll-behavior-x: none; }
 body {
   margin: 0;
   font: 400 16px/1.45 var(--font-body);
