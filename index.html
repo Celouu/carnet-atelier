@@ -372,8 +372,22 @@ details.plus[open] > summary::after { transform: rotate(-135deg); }
 .coche input { flex: none; width: 24px; height: 24px; margin: 0; accent-color: var(--done); }
 .coche span { min-width: 0; overflow-wrap: anywhere; }
 .retirer { flex: none; width: 48px; height: 48px; border: 0; border-radius: 50%; background: none; font-size: 24px; line-height: 1; color: var(--ink-soft); }
-.fourn-ajout { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.fourn-ajout { display: grid; grid-template-columns: minmax(0, 1fr) 92px auto; gap: 8px; }
 .fourn-ajout .puce { min-height: 52px; border-radius: 14px; }
+.fourn-ajout .avec-unite .saisie { padding-right: 30px; text-align: right; }
+.fourn-ajout .avec-unite > span { right: 12px; }
+/* Coût d'une fourniture, modifiable dans la liste */
+.cout { flex: none; width: 88px; }
+.cout .saisie {
+  min-height: 44px; padding: 9px 26px 9px 8px; border-radius: 10px; background: var(--bg);
+  box-shadow: none; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums;
+}
+.cout > span { right: 10px; }
+.saisie[aria-invalid="true"] { border-color: var(--late); }
+.fourn li.fourn-total {
+  justify-content: space-between; min-height: 48px; padding: 0 68px 0 14px;
+  font-weight: 700; font-variant-numeric: tabular-nums;
+}
 
 .suppr { display: flex; flex-direction: column; gap: 12px; padding-top: 18px; border-top: 1px solid var(--line); }
 .suppr-choix { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -648,7 +662,11 @@ dialog.petit p { margin: 0; }
             <span class="lib">Fournitures</span>
             <ul class="fourn" id="fournListe" hidden></ul>
             <div class="fourn-ajout">
-              <input class="saisie" type="text" id="fFournNom" maxlength="120" autocomplete="off" enterkeyhint="done" aria-label="Fourniture à ajouter">
+              <input class="saisie" type="text" id="fFournNom" maxlength="120" autocomplete="off" enterkeyhint="next" aria-label="Fourniture à ajouter">
+              <div class="avec-unite">
+                <input class="saisie" type="text" id="fFournCout" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="Coût de la fourniture en euros">
+                <span aria-hidden="true">€</span>
+              </div>
               <button type="button" class="puce" id="btnFournAjout">Ajouter</button>
             </div>
           </div>
@@ -800,7 +818,10 @@ dialog.petit p { margin: 0; }
       tempsMs: typeof d.tempsMs === "number" && isFinite(d.tempsMs) && d.tempsMs > 0 ? Math.floor(d.tempsMs) : 0,
       chronoDepuis: !fait && depuis && !isNaN(Date.parse(depuis)) ? depuis : "",
       fournitures: Array.isArray(d.fournitures)
-        ? d.fournitures.filter((f) => f && typeof f.nom === "string").map((f) => ({ nom: f.nom, ok: f.ok === true }))
+        ? d.fournitures.filter((f) => f && typeof f.nom === "string").map((f) => ({
+            nom: f.nom, ok: f.ok === true,
+            cout: typeof f.cout === "number" && isFinite(f.cout) && f.cout >= 0 ? Math.round(f.cout * 100) / 100 : null,
+          }))
         : [],
       notes: str(d.notes),
       creeLe: str(d.creeLe),
@@ -875,10 +896,18 @@ dialog.petit p { margin: 0; }
   const trouver = (id) => state.projets.find((p) => p.id === id) || null;
   const tempsTotal = (p) => p.tempsMs + (p.chronoDepuis ? Math.max(0, Date.now() - Date.parse(p.chronoDepuis)) : 0);
   const chronoArrete = (p) => Object.assign({}, p, { tempsMs: tempsTotal(p), chronoDepuis: "" });
-  function prixConseille(ms) {
-    if (!state.taux || ms < 60000) return null;
-    return Math.max(1, Math.round((ms / 3600000) * state.taux));
+  // Somme des coûts des fournitures (celles qui n'ont pas de coût comptent pour 0).
+  const coutFournitures = (liste) =>
+    Math.round((liste || []).reduce((s, f) => s + (typeof f.cout === "number" && isFinite(f.cout) ? f.cout : 0), 0) * 100) / 100;
+  // Prix conseillé = temps × taux horaire + coût des fournitures.
+  function prixConseille(ms, fournitures) {
+    if (!state.taux) return null;
+    const temps = ms >= 60000 ? Math.max(1, Math.round((ms / 3600000) * state.taux)) : 0;
+    const total = Math.round((temps + coutFournitures(fournitures)) * 100) / 100;
+    return total > 0 ? total : null;
   }
+  // 12.5 -> « 12,50 », 30 -> « 30 » (pour remplir une case)
+  const texteMontant = (n) => (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(".", ","));
 
   /* ---------- Petits outils d'affichage ---------- */
   const ICONES = {
@@ -1224,7 +1253,7 @@ dialog.petit p { margin: 0; }
         "aria-label": (tourne ? "Arrêter le chrono de " : "Lancer le chrono pour ") + (p.titre || "ce projet"),
       }, icone(tourne ? "pause" : "lecture"), el("span", { text: tourne ? "Arrêter" : "Chrono" })),
       blocTemps(p));
-    const conseil = p.prix == null ? prixConseille(total) : null;
+    const conseil = p.prix == null ? prixConseille(total, p.fournitures) : null;
     if (p.prix != null) pied.append(el("span", { class: "prix", text: euros(p.prix) }));
     else if (conseil != null) pied.append(el("span", { class: "prix conseil", "data-conseil": p.id, text: "≈ " + euros(conseil) }));
 
@@ -1243,7 +1272,7 @@ dialog.petit p { margin: 0; }
       el("span", { class: "fiche-titre", text: p.titre || "Projet sans nom" }), sous);
 
     const pied = el("div", { class: "fiche-pied" }, blocTemps(p));
-    const conseil = p.prix == null ? prixConseille(p.tempsMs) : null;
+    const conseil = p.prix == null ? prixConseille(p.tempsMs, p.fournitures) : null;
     if (p.prix != null) pied.append(el("span", { class: "prix", text: euros(p.prix) }));
     else if (conseil != null) pied.append(el("span", { class: "prix conseil", text: "≈ " + euros(conseil) }));
     if (p.paye) pied.append(el("button", {
@@ -1326,7 +1355,7 @@ dialog.petit p { margin: 0; }
     $("chronoTemps").textContent = texte;
     if (feuille.open && brouillon && brouillon.id === p.id && brouillon.chronoDepuis) $("chronoNoteTemps").textContent = texte;
     const c = document.querySelector('[data-conseil="' + p.id + '"]');
-    const conseil = prixConseille(t);
+    const conseil = prixConseille(t, p.fournitures);
     if (c && conseil != null) c.textContent = "≈ " + euros(conseil);
   }, 1000);
 
@@ -1416,8 +1445,8 @@ dialog.petit p { margin: 0; }
   function empreinte() {
     return JSON.stringify([
       $("fTitre").value, $("fQui").value, $("fCommande").value, $("fQuand").value, $("fPrix").value, $("fPaye").checked, $("fFait").checked,
-      $("fNotes").value, $("fFournNom").value, tempsModifie ? [$("fHeures").value, $("fMinutes").value] : null,
-      brouillon ? brouillon.fournitures : null,
+      $("fNotes").value, $("fFournNom").value, $("fFournCout").value, tempsModifie ? [$("fHeures").value, $("fMinutes").value] : null,
+      brouillon ? brouillon.fournitures.map((f) => [f.nom, f.ok, texteCout(f).trim()]) : null,
     ]);
   }
   // « Annuler » ne jette pas des changements sans prévenir.
@@ -1447,17 +1476,37 @@ dialog.petit p { margin: 0; }
   $("fQuand").addEventListener("input", majQuand);
   $("fQuand").addEventListener("change", majQuand);
 
+  // Ce qu'affiche la case du coût : ce qui a été tapé, sinon le montant enregistré.
+  const texteCout = (f) => (typeof f.coutTexte === "string" ? f.coutTexte
+    : typeof f.cout === "number" && isFinite(f.cout) ? texteMontant(f.cout) : "");
+
   function renderFournitures() {
     const lignes = brouillon.fournitures.map((f, i) => {
       const id = "fFourn" + i;
       const coche = el("input", { type: "checkbox", id: id, "data-coche": String(i) });
       coche.checked = f.ok;
+      const cout = el("input", {
+        class: "saisie", type: "text", inputmode: "decimal", autocomplete: "off", enterkeyhint: "done",
+        "data-cout": String(i), "aria-label": "Coût de " + f.nom + " en euros",
+      });
+      cout.value = texteCout(f);
       return el("li", null,
         el("label", { class: "coche", for: id }, coche, el("span", { text: f.nom })),
+        el("div", { class: "avec-unite cout" }, cout, el("span", { "aria-hidden": "true", text: "€" })),
         el("button", { type: "button", class: "retirer", "data-retirer": String(i), "aria-label": "Retirer " + f.nom, text: "×" }));
     });
+    lignes.push(el("li", { class: "fourn-total", id: "fournTotal" }, el("span", { text: "Total" }), el("span", { id: "fournTotalVal" })));
     remplir($("fournListe"), lignes);
-    $("fournListe").hidden = lignes.length === 0;
+    $("fournListe").hidden = brouillon.fournitures.length === 0;
+    majTotalFournitures();
+  }
+  // Le total s'affiche dès que deux fournitures ont un coût.
+  function majTotalFournitures() {
+    const ligne = $("fournTotal");
+    if (!ligne) return;
+    const avecCout = brouillon.fournitures.filter((f) => typeof f.cout === "number" && isFinite(f.cout)).length;
+    ligne.hidden = avecCout < 2;
+    $("fournTotalVal").textContent = euros(coutFournitures(brouillon.fournitures));
   }
 
   // Lit « heures » et « minutes ». Renvoie des millisecondes, ou null si ce n'est pas un nombre.
@@ -1487,7 +1536,7 @@ dialog.petit p { margin: 0; }
   function majConseil() {
     const bouton = $("btnConseil"), aide = $("conseilAide");
     const ms = tempsDeLaFeuille();
-    const conseil = prixConseille(ms);
+    const conseil = prixConseille(ms, brouillon.fournitures);
     bouton.hidden = !!state.taux && conseil == null;
     aide.hidden = conseil == null;
     if (!state.taux) {
@@ -1496,8 +1545,12 @@ dialog.petit p { margin: 0; }
     } else if (conseil != null) {
       bouton.textContent = "Mettre " + euros(conseil);
       bouton.setAttribute("data-action", "prix");
-      bouton.setAttribute("data-valeur", String(conseil));
-      aide.textContent = duree(ms) + " × " + euros(state.taux) + " / h";
+      bouton.setAttribute("data-valeur", texteMontant(conseil));
+      const matieres = coutFournitures(brouillon.fournitures);
+      const calcul = [];
+      if (ms >= 60000) calcul.push(duree(ms) + " × " + euros(state.taux) + " / h");
+      if (matieres > 0) calcul.push(euros(matieres) + " de fournitures");
+      aide.textContent = calcul.join(" + ");
     }
   }
 
@@ -1512,11 +1565,13 @@ dialog.petit p { margin: 0; }
     $("fQui").value = brouillon.pourQui;
     $("fQuand").value = brouillon.echeance;
     $("fCommande").value = brouillon.commandeLe || isoLocal(new Date());
-    $("fPrix").value = brouillon.prix == null ? "" : String(brouillon.prix).replace(".", ",");
+    $("fPrix").value = brouillon.prix == null ? "" : texteMontant(brouillon.prix);
     $("fPaye").checked = brouillon.paye;
     $("fFait").checked = estFait(brouillon);
     $("fNotes").value = brouillon.notes;
     $("fFournNom").value = "";
+    $("fFournCout").value = "";
+    $("fFournCout").removeAttribute("aria-invalid");
     $("rangeeFait").hidden = !p;
     majTempsFeuille();
     renderFournitures();
@@ -1536,12 +1591,15 @@ dialog.petit p { margin: 0; }
   }
 
   function ajouterFourniture() {
-    const champ = $("fFournNom");
+    const champ = $("fFournNom"), champCout = $("fFournCout");
     const nom = champ.value.trim();
     if (!nom) return;
-    brouillon.fournitures.push({ nom: nom, ok: false });
+    const texte = champCout.value.trim();
+    brouillon.fournitures.push({ nom: nom, ok: false, cout: lireEuros(texte), coutTexte: texte });
     champ.value = "";
+    champCout.value = "";
     renderFournitures();
+    majConseil();
   }
 
   $("btnFournAjout").addEventListener("click", () => {
@@ -1552,11 +1610,23 @@ dialog.petit p { margin: 0; }
     const i = e.target && e.target.getAttribute("data-coche");
     if (i != null && brouillon.fournitures[Number(i)]) brouillon.fournitures[Number(i)].ok = e.target.checked;
   });
+  // Le coût se change directement dans la liste ; le total et le prix conseillé suivent.
+  $("fournListe").addEventListener("input", (e) => {
+    const i = e.target && e.target.getAttribute("data-cout");
+    const f = i != null ? brouillon.fournitures[Number(i)] : null;
+    if (!f) return;
+    f.coutTexte = e.target.value;
+    f.cout = lireEuros(e.target.value.trim());
+    e.target.removeAttribute("aria-invalid");
+    majTotalFournitures();
+    majConseil();
+  });
   $("fournListe").addEventListener("click", (e) => {
     const b = e.target.closest("[data-retirer]");
     if (!b) return;
     brouillon.fournitures.splice(Number(b.getAttribute("data-retirer")), 1);
     renderFournitures();
+    majConseil();
   });
 
   $("pucesDate").addEventListener("click", (e) => {
@@ -1595,7 +1665,8 @@ dialog.petit p { margin: 0; }
     const t = e.target;
     if (!t || t.tagName !== "INPUT" || t.type === "checkbox") return;
     e.preventDefault();
-    if (t.id === "fFournNom") ajouterFourniture();
+    if (t.id === "fFournNom") { if (t.value.trim()) $("fFournCout").focus(); }
+    else if (t.id === "fFournCout") { ajouterFourniture(); $("fFournNom").focus(); }
     else if (t.id === "fTitre") $("fQui").focus();     // « Suivant » passe vraiment au champ suivant
     else if (t.id === "fHeures") $("fMinutes").focus();
     else t.blur();
@@ -1637,6 +1708,14 @@ dialog.petit p { margin: 0; }
       tempsMs = t;
     }
     ajouterFourniture(); // une fourniture tapée mais pas encore ajoutée n'est pas perdue
+    const coutFaux = brouillon.fournitures.findIndex((f) => typeof f.cout === "number" && isNaN(f.cout));
+    if (coutFaux >= 0) {
+      montrerErreur("Le coût d'une fourniture doit être un nombre.");
+      $("plus").open = true;
+      const champ = $("fournListe").querySelector('[data-cout="' + coutFaux + '"]');
+      if (champ) { champ.setAttribute("aria-invalid", "true"); champ.focus(); }
+      return;
+    }
 
     const maintenant = new Date().toISOString();
     const fait = brouillon.id ? $("fFait").checked : false;
@@ -1663,7 +1742,7 @@ dialog.petit p { margin: 0; }
       payeLe: paye ? (etaitPaye && vivant.payeLe ? vivant.payeLe : maintenant) : "",
       tempsMs: tempsMs,
       chronoDepuis: chronoDepuis,
-      fournitures: brouillon.fournitures.map((f) => ({ nom: f.nom, ok: f.ok })),
+      fournitures: brouillon.fournitures.map((f) => ({ nom: f.nom, ok: f.ok, cout: typeof f.cout === "number" && isFinite(f.cout) ? f.cout : null })),
       notes: $("fNotes").value.trim(),
       creeLe: brouillon.creeLe,
     });
