@@ -286,6 +286,23 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
 }
 #fete { position: fixed; inset: 0; z-index: 40; width: 100%; height: 100%; pointer-events: none; }
 
+/* Money money : le petit sticker animé quand une commande est payée */
+.money {
+  position: fixed; left: 50%; top: 46%; z-index: 38; width: min(280px, 72vw);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  transform: translate(-50%, -50%); pointer-events: none;
+}
+.money-sac { width: 56%; transform-origin: 50% 90%; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .25)); }
+.money-sac svg { display: block; width: 100%; height: auto; }
+.money-texte {
+  margin: 0; display: flex; white-space: nowrap;
+  font: 800 clamp(32px, 10.5vw, 44px)/1.1 var(--font-display); letter-spacing: -.01em; color: #FFD23F;
+  text-shadow: 3px 0 #1D1A0C, -3px 0 #1D1A0C, 0 3px #1D1A0C, 0 -3px #1D1A0C,
+    2px 2px #1D1A0C, -2px 2px #1D1A0C, 2px -2px #1D1A0C, -2px -2px #1D1A0C, 0 7px 0 rgba(0, 0, 0, .22);
+}
+.money-texte span { display: inline-block; }
+.money-texte .espace { width: .28em; }
+
 /* Feuille de saisie : plein écran au téléphone, carte centrée sur grand écran */
 dialog.feuille {
   inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; border: 0;
@@ -419,6 +436,20 @@ dialog.petit p { margin: 0; }
   .enregistrer-bas { transition: transform .12s ease; }
   .enregistrer-bas:active { transform: scale(.97); }
   @keyframes part { to { opacity: 0; transform: scale(.96); } }
+  .money.joue { animation: money-entree .38s cubic-bezier(.2, 1.5, .4, 1) both, money-sortie .3s ease 2.1s forwards; }
+  .money.joue .money-sac { animation: money-danse .5s ease-in-out 4 alternate; }
+  .money.joue .money-texte span { animation: money-saut .5s cubic-bezier(.3, 1.6, .5, 1) both; animation-delay: calc(var(--i) * 45ms + .15s); }
+  @keyframes money-entree {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(.3) rotate(-8deg); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); }
+  }
+  @keyframes money-sortie { to { opacity: 0; transform: translate(-50%, -50%) scale(.85); } }
+  @keyframes money-danse { from { transform: rotate(-9deg); } to { transform: rotate(9deg) translateY(-8px); } }
+  @keyframes money-saut {
+    0% { opacity: 0; transform: translateY(18px) scale(.4); }
+    60% { opacity: 1; transform: translateY(-10px) scale(1.15); }
+    100% { opacity: 1; transform: none; }
+  }
   .bilan dd.bump { animation: bump .6s ease; }
   .bravo { animation: descend .4s cubic-bezier(.2, 1.3, .4, 1); }
   .point { animation: bat 1.4s ease-in-out infinite; }
@@ -501,6 +532,21 @@ dialog.petit p { margin: 0; }
   <button type="button" class="bravo-annuler" id="bravoAnnuler" hidden>Annuler</button>
 </div>
 <canvas id="fete" hidden aria-hidden="true"></canvas>
+<div class="money" id="money" hidden aria-hidden="true">
+  <div class="money-sac">
+    <svg viewBox="0 0 120 130">
+      <g transform="rotate(-18 44 24)"><rect x="26" y="14" width="36" height="20" rx="3" fill="#3FA466" stroke="#1E5E38" stroke-width="2"/><circle cx="44" cy="24" r="5" fill="none" stroke="#1E5E38" stroke-width="2"/></g>
+      <g transform="rotate(16 78 22)"><rect x="60" y="12" width="36" height="20" rx="3" fill="#4DB874" stroke="#1E5E38" stroke-width="2"/><circle cx="78" cy="22" r="5" fill="none" stroke="#1E5E38" stroke-width="2"/></g>
+      <path d="M60 40 C 24 40, 8 80, 14 102 C 20 124, 100 124, 106 102 C 112 80, 96 40, 60 40 Z" fill="#E2B85C" stroke="#7A5418" stroke-width="3"/>
+      <path d="M44 30 C 52 36, 68 36, 76 30 L 74 44 C 66 49, 54 49, 46 44 Z" fill="#B88A2E" stroke="#7A5418" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M33 61 H 56 V 67 C 56 75, 35 75, 33 67 Z M 64 61 H 87 V 67 C 85 75, 64 75, 64 67 Z" fill="#1D1A0C"/>
+      <path d="M55 63 H 65" stroke="#1D1A0C" stroke-width="3"/>
+      <path d="M38 64 H 44 M 69 64 H 75" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+      <text x="60" y="110" text-anchor="middle" font-family="Bricolage Grotesque, Arial Black, sans-serif" font-weight="800" font-size="36" fill="#2E7D4F">€</text>
+    </svg>
+  </div>
+  <p class="money-texte" id="moneyTexte">Money money !</p>
+</div>
 
 <dialog class="feuille" id="feuille" aria-labelledby="feuilleTitre">
   <form id="formProjet" novalidate>
@@ -898,27 +944,48 @@ dialog.petit p { margin: 0; }
   const ctx = toile.getContext ? toile.getContext("2d") : null;
   let grains = [], rafFete = 0, tPrec = 0;
 
-  function confettis(x, y, genre) {
-    if (reduit.matches || !ctx) return;
+  function preparerToile() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = Math.round(window.innerWidth * dpr), h = Math.round(window.innerHeight * dpr);
     if (toile.width !== w || toile.height !== h) { toile.width = w; toile.height = h; }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const n = genre === "paye" ? 24 : 40;
+  }
+  function lancerFete() {
+    toile.hidden = false;
+    if (!rafFete) { tPrec = performance.now(); rafFete = requestAnimationFrame(pasFete); }
+  }
+  function confettis(x, y, genre) {
+    if (reduit.matches || !ctx) return;
+    preparerToile();
+    const argent = genre === "paye";
+    const n = argent ? 28 : 40;
     for (let i = 0; i < n; i++) {
       const angle = -Math.PI / 2 + (Math.random() - 0.5) * 2.3;
       const v = 6 + Math.random() * 10;
+      const forme = argent ? (i % 2 ? "billet" : "piece") : (Math.random() < 0.45 ? "bouton" : "chute");
       grains.push({
         x: x, y: y, vx: Math.cos(angle) * v, vy: Math.sin(angle) * v,
-        rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.4,
+        rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.4, phase: Math.random() * 6.28,
         t: 0, vie: 75 + Math.random() * 40,
-        taille: genre === "paye" ? 15 + Math.random() * 7 : 9 + Math.random() * 8,
-        forme: genre === "paye" ? "piece" : (Math.random() < 0.45 ? "bouton" : "chute"),
+        taille: forme === "piece" ? 15 + Math.random() * 7 : forme === "billet" ? 11 + Math.random() * 4 : 9 + Math.random() * 8,
+        forme: forme,
         couleur: TEINTES[i % TEINTES.length],
       });
     }
-    toile.hidden = false;
-    if (!rafFete) { tPrec = performance.now(); rafFete = requestAnimationFrame(pasFete); }
+    lancerFete();
+  }
+  // Money money : une pluie de billets depuis le haut de l'écran.
+  function pluieBillets() {
+    if (reduit.matches || !ctx) return;
+    preparerToile();
+    for (let i = 0; i < 18; i++) {
+      grains.push({
+        x: Math.random() * window.innerWidth, y: -20 - Math.random() * 300, vx: 0, vy: 2 + Math.random(),
+        vmax: 3.5 + Math.random() * 1.5, rot: (Math.random() - 0.5) * 0.8, vr: (Math.random() - 0.5) * 0.04,
+        phase: Math.random() * 6.28, t: 0, vie: 1200, taille: 12 + Math.random() * 5, forme: "billet", pluie: true, couleur: "",
+      });
+    }
+    lancerFete();
   }
   function pasFete(t) {
     const k = Math.min(2.5, (t - tPrec) / 16.67);
@@ -927,9 +994,15 @@ dialog.petit p { margin: 0; }
     grains = grains.filter((g) => g.t < g.vie && g.y < window.innerHeight + 40);
     for (const g of grains) {
       g.t += k;
-      g.vy += 0.42 * k;
-      g.vx *= Math.pow(0.985, k);
-      g.x += g.vx * k;
+      if (g.pluie) {
+        // pluie de billets : chute lente, avec un balancement
+        g.vy = Math.min(g.vy + 0.06 * k, g.vmax);
+        g.x += Math.sin(g.t * 0.05 + g.phase) * 1.2 * k;
+      } else {
+        g.vy += 0.42 * k;
+        g.vx *= Math.pow(0.985, k);
+        g.x += g.vx * k;
+      }
       g.y += g.vy * k;
       g.rot += g.vr * k;
       ctx.save();
@@ -937,7 +1010,20 @@ dialog.petit p { margin: 0; }
       ctx.translate(g.x, g.y);
       ctx.rotate(g.rot);
       const r = g.taille / 2;
-      if (g.forme === "chute") {
+      if (g.forme === "billet") {
+        ctx.scale(1, Math.cos(g.t * 0.16 + g.phase)); // le billet se retourne en tombant
+        const w = g.taille * 1.9, h = g.taille;
+        ctx.fillStyle = "#3FA466";
+        ctx.fillRect(-w / 2, -h / 2, w, h);
+        ctx.strokeStyle = "#1E5E38";
+        ctx.lineWidth = 1.4;
+        ctx.strokeRect(-w / 2 + 2.5, -h / 2 + 2.5, w - 5, h - 5);
+        ctx.fillStyle = "#1E5E38";
+        ctx.font = "800 " + Math.round(h * 0.72) + "px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("€", 0, 1);
+      } else if (g.forme === "chute") {
         ctx.fillStyle = g.couleur;
         ctx.fillRect(-r, -r * 0.65, g.taille, g.taille * 0.65);
       } else {
@@ -975,6 +1061,30 @@ dialog.petit p { margin: 0; }
       toile.hidden = true;
     }
   }
+  /* ---------- Money money : le sticker animé quand une commande est payée ---------- */
+  const money = $("money");
+  let minuteurMoney = 0;
+  remplir($("moneyTexte"), Array.from("Money money !").map((c, i) =>
+    c === " " ? el("span", { class: "espace" }) : el("span", { style: "--i:" + i, text: c })));
+  function moneyMoney() {
+    clearTimeout(minuteurMoney);
+    money.classList.remove("joue");
+    money.hidden = false;
+    void money.offsetWidth; // relance l'animation même si le sticker était déjà là
+    if (!reduit.matches) money.classList.add("joue");
+    minuteurMoney = setTimeout(cacherMoney, reduit.matches ? 1600 : 2500);
+  }
+  function cacherMoney() {
+    clearTimeout(minuteurMoney);
+    money.hidden = true;
+    money.classList.remove("joue");
+  }
+  // Paiement annulé : le sticker et l'argent qui vole s'en vont aussitôt.
+  function arreterArgent() {
+    cacherMoney();
+    grains = grains.filter((g) => g.forme !== "billet" && g.forme !== "piece");
+  }
+
   function centreDe(elm) {
     if (!elm || !elm.getBoundingClientRect) return { x: window.innerWidth / 2, y: window.innerHeight * 0.35 };
     const r = elm.getBoundingClientRect();
@@ -996,6 +1106,8 @@ dialog.petit p { margin: 0; }
   function feterPaye(origine, prix, dejaCompte, annuler, idExclu) {
     const c = centreDe(origine);
     confettis(c.x, c.y, "paye");
+    pluieBillets();
+    moneyMoney();
     const total = Math.round((encaisseCeMois() + (dejaCompte ? 0 : prix)) * 100) / 100;
     const resteDu = state.projets.some((p) => estFait(p) && !p.paye && p.prix && p.id !== idExclu);
     annoncer("+ " + euros(prix), (resteDu ? "" : "Tout est encaissé. ") + euros(total) + " encaissés en " + moisCourant(), "paye", annuler);
@@ -1211,6 +1323,7 @@ dialog.petit p { margin: 0; }
     state.pop = id;
     setTimeout(() => { if (state.pop === id) state.pop = null; }, 1200);
     feterPaye(bouton, p.prix, false, () => {
+      arreterArgent();
       if (enregistrerVite(p)) annoncer("Paiement annulé");
     }, id);
     enregistrerVite(Object.assign({}, p, { paye: true, payeLe: new Date().toISOString() }));
