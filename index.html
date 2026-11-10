@@ -150,6 +150,37 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
 .etat { padding: 14px 16px; border-radius: 16px; background: var(--late-bg); color: var(--late); font-weight: 600; }
 .vide { padding: 36px 16px; text-align: center; text-wrap: balance; }
 
+/* Carnet vide : les trois gestes à connaître */
+.guide { display: flex; flex-direction: column; gap: 16px; padding: 22px 20px; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); }
+.guide-titre { margin: 0; font: 700 18.5px/1.25 var(--font-display); }
+.guide ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.guide li { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: center; font-size: 15px; color: var(--ink-soft); }
+.guide li strong { font-weight: 600; color: var(--ink); }
+.g-ico { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); color: var(--ink); font-size: 20px; font-weight: 600; line-height: 1; }
+.g-ico svg { display: block; width: 16px; height: 16px; fill: currentColor; }
+.g-ico.rond-vide { width: 30px; height: 30px; margin: 3px; background: none; border: 2px solid var(--line-strong); }
+
+/* Feuille : question avant d'abandonner des changements, et second bouton d'enregistrement en bas */
+.abandon {
+  flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
+  background: var(--late-bg); color: var(--late); font-weight: 600;
+}
+.abandon p { margin: 0; }
+.abandon div { display: flex; gap: 8px; }
+.abandon button { min-height: 44px; padding: 0 16px; border: 0; border-radius: 22px; font-weight: 700; }
+.abandon .oui { background: var(--late); color: var(--surface); }
+.abandon .non { background: var(--surface); color: var(--ink); }
+.enregistrer-bas {
+  min-height: 56px; border: 0; border-radius: 28px; background: var(--ink); color: var(--bg);
+  font: 700 17px/1 var(--font-display);
+}
+
+@media (hover: hover) {
+  .chrono-btn:hover, .puce:hover, .taux:hover, .fixer:hover, .payer:hover, .discret:hover { filter: brightness(.95); }
+  .fiche-ouvrir:hover .fiche-titre { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+}
+
 /* Fiches */
 .fiches { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .fiche {
@@ -249,6 +280,10 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
 .bravo-texte { display: flex; flex-direction: column; min-width: 0; }
 .bravo-texte strong { font: 700 17px/1.25 var(--font-display); }
 .bravo-texte span { font-size: 14px; opacity: .8; }
+.bravo-annuler {
+  flex: none; min-height: 40px; margin-left: 4px; padding: 0 14px; border: 0; border-radius: 20px;
+  background: var(--bg); color: var(--ink); font-size: 14.5px; font-weight: 700;
+}
 #fete { position: fixed; inset: 0; z-index: 40; width: 100%; height: 100%; pointer-events: none; }
 
 /* Feuille de saisie : plein écran au téléphone, carte centrée sur grand écran */
@@ -294,7 +329,7 @@ textarea.saisie { min-height: 96px; line-height: 1.4; resize: vertical; }
   min-height: 44px; padding: 0 16px; border: 0; border-radius: 22px; background: var(--surface-2);
   font-size: 15px; font-weight: 600; white-space: nowrap; cursor: pointer;
 }
-.puce.forte { background: var(--ink); color: var(--bg); }
+.puce.forte, .puce[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 .sr:focus-visible + .puce, .puce:has(+ .sr:focus-visible) { outline: 2.5px solid var(--ink); outline-offset: 2px; }
 
 .avec-unite { position: relative; }
@@ -379,6 +414,11 @@ dialog.petit p { margin: 0; }
   .fiche.en-fete .rond svg { transition: stroke-dashoffset .28s ease-out .1s; }
   .fiche.en-fete .fiche-titre { transition: color .3s ease .15s; color: var(--ink-soft); }
   .tag-paye.pop { animation: pop .5s cubic-bezier(.3, 1.7, .5, 1); }
+  .fiche.en-fete { animation: part .28s ease .42s forwards; }
+  .onglet .nb.bump { display: inline-block; animation: bump .6s ease; }
+  .enregistrer-bas { transition: transform .12s ease; }
+  .enregistrer-bas:active { transform: scale(.97); }
+  @keyframes part { to { opacity: 0; transform: scale(.96); } }
   .bilan dd.bump { animation: bump .6s ease; }
   .bravo { animation: descend .4s cubic-bezier(.2, 1.3, .4, 1); }
   .point { animation: bat 1.4s ease-in-out infinite; }
@@ -425,6 +465,14 @@ dialog.petit p { margin: 0; }
     <p class="etat" id="etat" role="alert" hidden></p>
     <ul class="fiches" id="liste"></ul>
     <p class="vide" id="vide" hidden></p>
+    <div class="guide" id="guide" hidden>
+      <p class="guide-titre">Le carnet est vide. Trois gestes suffisent.</p>
+      <ul>
+        <li><span class="g-ico" aria-hidden="true">+</span><span><strong>Nouveau projet</strong>, en bas de l'écran, pour noter une commande. Seul le nom est obligatoire.</span></li>
+        <li><span class="g-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span><span><strong>Chrono</strong>, sur la fiche, pour compter le temps passé.</span></li>
+        <li><span class="g-ico rond-vide" aria-hidden="true"></span><span><strong>Le rond</strong>, à gauche de la fiche, quand le projet est fini.</span></li>
+      </ul>
+    </div>
 
     <footer class="garde" id="garde">
       <p id="gardeTexte">Vos projets sont gardés sur cet appareil.</p>
@@ -450,6 +498,7 @@ dialog.petit p { margin: 0; }
 <div class="bravo" id="bravo" role="status" aria-live="polite" hidden>
   <span class="bravo-icone" id="bravoIcone" aria-hidden="true"></span>
   <span class="bravo-texte"><strong id="bravoTitre"></strong><span id="bravoSous"></span></span>
+  <button type="button" class="bravo-annuler" id="bravoAnnuler" hidden>Annuler</button>
 </div>
 <canvas id="fete" hidden aria-hidden="true"></canvas>
 
@@ -460,6 +509,13 @@ dialog.petit p { margin: 0; }
       <h2 id="feuilleTitre">Nouveau projet</h2>
       <button type="submit" class="enregistrer" id="btnEnregistrer">Enregistrer</button>
     </header>
+    <div class="abandon" id="abandon" hidden>
+      <p>Abandonner les changements ?</p>
+      <div>
+        <button type="button" class="oui" id="btnAbandonOui">Abandonner</button>
+        <button type="button" class="non" id="btnAbandonNon">Continuer</button>
+      </div>
+    </div>
     <div class="feuille-corps" id="feuilleCorps">
       <p class="erreur" id="fErreur" role="alert" hidden></p>
 
@@ -482,6 +538,7 @@ dialog.petit p { margin: 0; }
           <button type="button" class="puce" data-jours="">Pas de date</button>
         </div>
         <input class="saisie" type="date" id="fQuand">
+        <p class="aide" id="quandAide" hidden></p>
       </div>
 
       <div class="champ" id="blocTemps">
@@ -528,6 +585,8 @@ dialog.petit p { margin: 0; }
           </div>
         </div>
       </details>
+
+      <button type="submit" class="enregistrer-bas">Enregistrer</button>
 
       <div class="suppr" id="zoneSuppr" hidden>
         <button type="button" class="lien-danger" id="btnSuppr">Supprimer ce projet</button>
@@ -802,9 +861,10 @@ dialog.petit p { margin: 0; }
     elm._raf = requestAnimationFrame(pas);
   }
 
-  let minuteurBravo = 0;
+  let minuteurBravo = 0, annulerCourant = null;
   // ton : "fin" (coche verte), "paye" (pièce), ou rien pour un simple message.
-  function annoncer(titre, sous, ton) {
+  // annuler : si on la donne, le message propose « Annuler » pendant quelques secondes.
+  function annoncer(titre, sous, ton, annuler) {
     const b = $("bravo");
     $("bravoTitre").textContent = titre;
     $("bravoSous").textContent = sous || "";
@@ -819,8 +879,18 @@ dialog.petit p { margin: 0; }
     void b.offsetWidth;
     b.hidden = false;
     clearTimeout(minuteurBravo);
-    minuteurBravo = setTimeout(() => { b.hidden = true; }, ton ? 3600 : 3000);
+    annulerCourant = annuler || null;
+    $("bravoAnnuler").hidden = !annuler;
+    minuteurBravo = setTimeout(() => { b.hidden = true; annulerCourant = null; }, annuler ? 6000 : ton ? 3600 : 3000);
   }
+
+  $("bravoAnnuler").addEventListener("click", () => {
+    const defaire = annulerCourant;
+    annulerCourant = null;
+    clearTimeout(minuteurBravo);
+    $("bravo").hidden = true;
+    if (defaire) defaire();
+  });
 
   /* ---------- La fête : boutons et chutes de tissu, ou pièces ---------- */
   const TEINTES = ["#E4572E", "#F2B134", "#2E9E6B", "#3A6FD8", "#C95D9B", "#7A5AC8"];
@@ -914,16 +984,21 @@ dialog.petit p { margin: 0; }
   const finisCeMois = () => state.projets.filter((p) => estFait(p) && dansCeMois(p.termineLe)).length;
   const encaisseCeMois = () => Math.round(state.projets.reduce((s, p) => s + (p.paye && p.prix && dansCeMois(p.payeLe) ? p.prix : 0), 0) * 100) / 100;
 
-  function feterFin(origine, dejaCompte) {
+  // idExclu : la fiche en train d'être terminée ou payée, pas encore enregistrée comme telle.
+  function feterFin(origine, dejaCompte, annuler, idExclu) {
     const c = centreDe(origine);
     confettis(c.x, c.y, "fin");
-    annoncer("Terminé !", ordinal(finisCeMois() + (dejaCompte ? 0 : 1)) + " projet fini en " + moisCourant(), "fin");
+    const toutFait = state.projets.filter((p) => !estFait(p) && p.id !== idExclu).length === 0;
+    if (toutFait) confettis(window.innerWidth / 2, window.innerHeight * 0.3, "fin"); // seconde gerbe : il ne reste plus rien à faire
+    const rang = ordinal(finisCeMois() + (dejaCompte ? 0 : 1)) + " projet fini en " + moisCourant();
+    annoncer(toutFait ? "Tout est fait !" : "Terminé !", toutFait ? rang + ". Plus rien en attente." : rang, "fin", annuler);
   }
-  function feterPaye(origine, prix, dejaCompte) {
+  function feterPaye(origine, prix, dejaCompte, annuler, idExclu) {
     const c = centreDe(origine);
     confettis(c.x, c.y, "paye");
     const total = Math.round((encaisseCeMois() + (dejaCompte ? 0 : prix)) * 100) / 100;
-    annoncer("+ " + euros(prix), euros(total) + " encaissés en " + moisCourant(), "paye");
+    const resteDu = state.projets.some((p) => estFait(p) && !p.paye && p.prix && p.id !== idExclu);
+    annoncer("+ " + euros(prix), (resteDu ? "" : "Tout est encaissé. ") + euros(total) + " encaissés en " + moisCourant(), "paye", annuler);
   }
 
   /* ---------- Rendu ---------- */
@@ -939,9 +1014,21 @@ dialog.petit p { margin: 0; }
     $("btnTaux").setAttribute("aria-label", state.taux ? "Taux horaire : " + euros(state.taux) + " de l'heure. Modifier" : "Régler mon taux horaire");
   }
 
+  // Le compteur d'un onglet sursaute quand il change : on voit où la fiche est partie.
+  function poserCompte(elm, n) {
+    const avant = elm._n;
+    elm._n = n;
+    elm.textContent = String(n);
+    if (typeof avant === "number" && avant !== n) {
+      elm.classList.remove("bump");
+      void elm.offsetWidth;
+      elm.classList.add("bump");
+    }
+  }
+
   function renderOnglets() {
-    $("nbAFaire").textContent = String(state.projets.filter((p) => !estFait(p)).length);
-    $("nbTermines").textContent = String(state.projets.filter(estFait).length);
+    poserCompte($("nbAFaire"), state.projets.filter((p) => !estFait(p)).length);
+    poserCompte($("nbTermines"), state.projets.filter(estFait).length);
     for (const b of $("onglets").querySelectorAll("[data-vue]")) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-vue") === state.vue));
     }
@@ -1014,7 +1101,7 @@ dialog.petit p { margin: 0; }
     return a.creeLe < b.creeLe ? -1 : a.creeLe > b.creeLe ? 1 : 0;
   };
   const triFaits = (a, b) => {
-    if (a.paye !== b.paye) return a.paye ? 1 : -1; // ce qui reste à encaisser d'abord
+    // L'ordre ne dépend pas du paiement : une fiche ne saute pas sous le doigt quand on la marque payée.
     return a.termineLe > b.termineLe ? -1 : a.termineLe < b.termineLe ? 1 : 0;
   };
 
@@ -1026,12 +1113,13 @@ dialog.petit p { margin: 0; }
 
     let msg = "";
     if (visibles.length === 0) {
-      if (state.projets.length === 0) msg = "Aucun projet pour l'instant. Touchez « Nouveau projet » pour noter le premier.";
+      if (state.projets.length === 0) msg = ""; // carnet vide : le guide des trois gestes s'affiche à la place
       else if (state.vue === "termines") msg = "Rien de terminé pour l'instant. Cochez le rond d'une fiche quand elle est finie.";
       else msg = "Tout est fait. Rien en attente.";
     }
     $("vide").textContent = msg;
     $("vide").hidden = !msg;
+    $("guide").hidden = state.projets.length > 0 || state.bloque;
   }
 
   function renderChrono() {
@@ -1098,14 +1186,22 @@ dialog.petit p { margin: 0; }
   }
 
   function terminer(id, bouton) {
-    if (!trouver(id)) return;
+    const avant = trouver(id);
+    if (!avant) return;
+    let annule = false;
     const li = bouton.closest(".fiche");
     bouton.disabled = true;
     if (li) li.classList.add("en-fete");
-    feterFin(bouton, false);
+    feterFin(bouton, false, () => {
+      annule = true;
+      const actuel = trouver(id);
+      if (actuel && estFait(actuel)) enregistrerVite(avant); // déjà rangée dans « Terminés » : on la remet comme avant
+      else render();
+      annoncer("Remis dans « À faire »");
+    }, id);
     setTimeout(() => {
       const vivant = trouver(id);
-      if (vivant) enregistrerVite(Object.assign({}, chronoArrete(vivant), { statut: "termine", termineLe: new Date().toISOString() }));
+      if (vivant && !annule) enregistrerVite(Object.assign({}, chronoArrete(vivant), { statut: "termine", termineLe: new Date().toISOString() }));
     }, reduit.matches ? 0 : 700);
   }
 
@@ -1114,7 +1210,9 @@ dialog.petit p { margin: 0; }
     if (!p || p.prix == null) return;
     state.pop = id;
     setTimeout(() => { if (state.pop === id) state.pop = null; }, 1200);
-    feterPaye(bouton, p.prix, false);
+    feterPaye(bouton, p.prix, false, () => {
+      if (enregistrerVite(p)) annoncer("Paiement annulé");
+    }, id);
     enregistrerVite(Object.assign({}, p, { paye: true, payeLe: new Date().toISOString() }));
   }
 
@@ -1138,6 +1236,48 @@ dialog.petit p { margin: 0; }
     $("fErreur").hidden = !msg;
     if (msg) $("feuilleCorps").scrollTop = 0;
   }
+
+  // Ce que contient la feuille, pour savoir si quelque chose a changé depuis son ouverture.
+  let empreinteInitiale = "";
+  function empreinte() {
+    return JSON.stringify([
+      $("fTitre").value, $("fQui").value, $("fQuand").value, $("fPrix").value, $("fPaye").checked, $("fFait").checked,
+      $("fNotes").value, $("fFournNom").value, tempsModifie ? [$("fHeures").value, $("fMinutes").value] : null,
+      brouillon ? brouillon.fournitures : null,
+    ]);
+  }
+  // « Annuler » ne jette pas des changements sans prévenir.
+  function demanderFermeture() {
+    if (brouillon && empreinte() !== empreinteInitiale) {
+      $("abandon").hidden = false;
+      $("btnAbandonNon").focus();
+      return;
+    }
+    fermerDialogue(feuille);
+  }
+
+  // Sous la date : le jour en toutes lettres, et le raccourci choisi reste allumé.
+  function majQuand() {
+    const v = $("fQuand").value;
+    for (const b of $("pucesDate").querySelectorAll("[data-jours]")) {
+      const j = b.getAttribute("data-jours");
+      let cible = "";
+      if (j !== "") {
+        const d = aujourdHui();
+        d.setDate(d.getDate() + Number(j));
+        cible = isoLocal(d);
+      }
+      b.setAttribute("aria-pressed", String(v === cible));
+    }
+    const aide = $("quandAide");
+    if (!RE_DATE.test(v)) { aide.hidden = true; return; }
+    const n = ecartJours(v);
+    aide.textContent = capitale(fmtLong.format(deIso(v)))
+      + (n === 0 ? ", aujourd'hui" : n === 1 ? ", demain" : n > 1 ? ", dans " + n + " jours" : ", date déjà passée");
+    aide.hidden = false;
+  }
+  $("fQuand").addEventListener("input", majQuand);
+  $("fQuand").addEventListener("change", majQuand);
 
   function renderFournitures() {
     const lignes = brouillon.fournitures.map((f, i) => {
@@ -1222,6 +1362,9 @@ dialog.petit p { margin: 0; }
     $("zoneSuppr").hidden = !p;
     $("btnSuppr").hidden = false;
     $("supprConfirme").hidden = true;
+    majQuand();
+    $("abandon").hidden = true;
+    empreinteInitiale = empreinte();
     ouvrirDialogue(feuille);
     $("feuilleCorps").scrollTop = 0;
     if (champAFocaliser) $(champAFocaliser).focus();
@@ -1256,10 +1399,11 @@ dialog.petit p { margin: 0; }
     const b = e.target.closest("[data-jours]");
     if (!b) return;
     const j = b.getAttribute("data-jours");
-    if (j === "") { $("fQuand").value = ""; return; }
+    if (j === "") { $("fQuand").value = ""; majQuand(); return; }
     const d = aujourdHui();
     d.setDate(d.getDate() + Number(j));
     $("fQuand").value = isoLocal(d);
+    majQuand();
   });
 
   for (const id of ["fHeures", "fMinutes"]) {
@@ -1288,6 +1432,8 @@ dialog.petit p { margin: 0; }
     if (!t || t.tagName !== "INPUT" || t.type === "checkbox") return;
     e.preventDefault();
     if (t.id === "fFournNom") ajouterFourniture();
+    else if (t.id === "fTitre") $("fQui").focus();     // « Suivant » passe vraiment au champ suivant
+    else if (t.id === "fHeures") $("fMinutes").focus();
     else t.blur();
   });
 
@@ -1338,6 +1484,7 @@ dialog.petit p { margin: 0; }
       chronoDepuis = "";
     }
     const quandValeur = $("fQuand").value;
+    if (!brouillon.id) state.vue = "a-faire"; // un nouveau projet s'affiche là où on peut le voir
     const r = enregistrer({
       id: brouillon.id,
       titre: titre,
@@ -1364,7 +1511,10 @@ dialog.petit p { margin: 0; }
     else annoncer("Projet enregistré");
   });
 
-  $("btnAnnuler").addEventListener("click", () => fermerDialogue(feuille));
+  $("btnAnnuler").addEventListener("click", demanderFermeture);
+  feuille.addEventListener("cancel", (e) => { e.preventDefault(); demanderFermeture(); }); // touche Échap
+  $("btnAbandonOui").addEventListener("click", () => fermerDialogue(feuille));
+  $("btnAbandonNon").addEventListener("click", () => { $("abandon").hidden = true; });
   $("btnSuppr").addEventListener("click", () => {
     $("btnSuppr").hidden = true;
     $("supprConfirme").hidden = false;
@@ -1376,10 +1526,11 @@ dialog.petit p { margin: 0; }
   });
   $("btnSupprOui").addEventListener("click", () => {
     if (!brouillon || !brouillon.id) return;
+    const efface = trouver(brouillon.id);
     const r = supprimer(brouillon.id);
     if (!r.ok) { montrerErreur(r.message); return; }
     fermerDialogue(feuille);
-    annoncer("Projet supprimé");
+    annoncer("Projet supprimé", "", "", efface ? () => { if (enregistrerVite(efface)) annoncer("Projet remis dans le carnet"); } : null);
   });
 
   /* ---------- Taux horaire ---------- */
