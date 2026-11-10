@@ -1,0 +1,1550 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carnet d'atelier</title>
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Atelier">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F3F4F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1311" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&display=swap">
+<style>
+/* Mise en page : une colonne au téléphone (le mois, deux onglets, les fiches, le bouton d'ajout sous le pouce).
+   Sur grand écran, le mois passe dans une colonne fixe à gauche et les fiches à droite. */
+:root {
+  --bg: #F3F4F1;
+  --bg-0: rgba(243, 244, 241, 0);
+  --surface: #FFFFFF;
+  --surface-2: #E8EBE6;
+  --ink: #141A17;
+  --ink-soft: #5C6862;
+  --line: #DDE1DC;
+  --line-strong: #B7C0B9;
+  --done: #1F9D63;
+  --done-ink: #FFFFFF;
+  --done-text: #15784A;
+  --gold: #8A5B00;
+  --gold-bg: #FFF0C7;
+  --late: #C2372A;
+  --late-bg: #FBE6E2;
+  --live: #E5484D;
+  --knob: #FFFFFF;
+  --backdrop: rgba(12, 18, 15, .5);
+  --shadow: 0 1px 2px rgba(20, 26, 23, .04), 0 10px 30px rgba(20, 26, 23, .06);
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", -apple-system, "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0F1311;
+    --bg-0: rgba(15, 19, 17, 0);
+    --surface: #1A201D;
+    --surface-2: #262D29;
+    --ink: #EEF2EE;
+    --ink-soft: #9BA8A1;
+    --line: #2C3530;
+    --line-strong: #4A5750;
+    --done: #36B87A;
+    --done-ink: #06140D;
+    --done-text: #6FD9A5;
+    --gold: #F3CE6B;
+    --gold-bg: #3E3212;
+    --late: #FF8D7C;
+    --late-bg: #47211C;
+    --live: #FF6369;
+    --knob: #FFFFFF;
+    --backdrop: rgba(0, 0, 0, .62);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+html:has(dialog[open]) { overflow: hidden; }
+body {
+  margin: 0;
+  font: 400 16px/1.45 var(--font-body);
+  color: var(--ink);
+  background: var(--bg);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+  -webkit-tap-highlight-color: transparent;
+}
+body.avec-chrono { padding-bottom: calc(204px + env(safe-area-inset-bottom, 0px)); }
+button, input, textarea { font: inherit; color: inherit; margin: 0; }
+button { cursor: pointer; touch-action: manipulation; -webkit-appearance: none; appearance: none; }
+button:disabled { cursor: default; opacity: .5; }
+:focus-visible { outline: 2.5px solid var(--ink); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.etiquette {
+  margin: 0; font-size: 12.5px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--ink-soft);
+}
+.ico { display: inline-grid; place-items: center; flex: none; }
+.ico svg { display: block; width: 18px; height: 18px; fill: currentColor; }
+.ico.trait svg { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Structure */
+.page { max-width: 640px; margin-inline: auto; display: flex; flex-direction: column; gap: 28px; }
+.cote { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+.travail { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+@media (min-width: 960px) {
+  body { padding-top: calc(40px + env(safe-area-inset-top, 0px)); }
+  .page { max-width: 1040px; display: grid; grid-template-columns: 320px minmax(0, 1fr); column-gap: 56px; align-items: start; }
+  .cote { position: sticky; top: calc(40px + env(safe-area-inset-top, 0px)); }
+}
+
+/* En-tête */
+.tete { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.tete > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); letter-spacing: -.02em; }
+.taux {
+  flex: none; min-height: 44px; padding: 0 16px; border: 0; border-radius: 22px;
+  background: var(--surface-2); font-size: 15px; font-weight: 600; white-space: nowrap;
+}
+
+/* À faire en premier : installer sur l'écran d'accueil */
+.astuce { padding: 16px 18px; border-radius: 20px; background: var(--gold-bg); color: var(--gold); }
+.astuce strong { display: block; font: 700 17px/1.25 var(--font-display); }
+.astuce p { margin: 6px 0 0; font-size: 15px; }
+
+/* Le mois */
+.mois { display: flex; flex-direction: column; gap: 10px; }
+.bilan { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.bilan > div { display: flex; flex-direction: column-reverse; gap: 2px; min-width: 0; }
+.bilan dt { font-size: 14px; color: var(--ink-soft); }
+.bilan dd {
+  margin: 0; font: 800 clamp(23px, 7.2vw, 34px)/1.05 var(--font-display); letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere; transform-origin: left center;
+}
+.bilan .or dd { color: var(--done-text); }
+@media (min-width: 960px) {
+  .bilan { grid-template-columns: 1fr; gap: 18px; }
+  .bilan dd { font-size: 40px; }
+}
+
+/* Onglets */
+.onglets { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 16px; background: var(--surface-2); }
+.onglet {
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px;
+  border: 0; border-radius: 12px; background: none; font-size: 15.5px; font-weight: 600; color: var(--ink-soft);
+}
+.onglet .nb { font-weight: 500; font-variant-numeric: tabular-nums; opacity: .75; }
+.onglet[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .1); }
+
+.etat, .vide { margin: 0; color: var(--ink-soft); font-size: 15.5px; }
+.etat { padding: 14px 16px; border-radius: 16px; background: var(--late-bg); color: var(--late); font-weight: 600; }
+.vide { padding: 36px 16px; text-align: center; text-wrap: balance; }
+
+/* Fiches */
+.fiches { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.fiche {
+  display: grid; grid-template-columns: 48px minmax(0, 1fr); column-gap: 6px; align-items: start;
+  padding: 12px 16px 14px 8px; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow);
+}
+.coche-fin { display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%; background: none; }
+.rond {
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--line-strong); color: var(--done-ink);
+}
+.rond svg { width: 17px; height: 17px; stroke-dasharray: 20; stroke-dashoffset: 20; }
+.fiche.faite .rond, .fiche.en-fete .rond { background: var(--done); border-color: var(--done); }
+.fiche.faite .rond svg, .fiche.en-fete .rond svg { stroke-dashoffset: 0; }
+.fiche-contenu { display: flex; flex-direction: column; min-width: 0; }
+.fiche-ouvrir {
+  display: flex; flex-direction: column; justify-content: center; gap: 3px; width: 100%; min-height: 48px;
+  padding: 4px 0; border: 0; border-radius: 8px; background: none; text-align: left;
+}
+.fiche-titre { font: 700 18.5px/1.25 var(--font-display); overflow-wrap: anywhere; }
+.fiche.faite .fiche-titre { color: var(--ink-soft); }
+.fiche-sous { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-size: 14.5px; color: var(--ink-soft); overflow-wrap: anywhere; }
+.qui + .quand::before, .qui + .apres::before { content: "· "; }
+.quand.proche { color: var(--ink); font-weight: 600; }
+.quand.retard { color: var(--late); font-weight: 600; }
+.fiche-ligne { font-size: 14.5px; color: var(--ink-soft); overflow-wrap: anywhere; }
+.fiche-pied { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 8px; }
+.chrono-btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px 0 12px;
+  border: 0; border-radius: 22px; background: var(--surface-2);
+  font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.chrono-btn.actif { background: var(--ink); color: var(--bg); }
+.temps-bloc {
+  display: flex; flex-direction: column; justify-content: center; gap: 1px; min-height: 44px; padding: 0 6px;
+  border: 0; border-radius: 10px; background: none; text-align: left;
+}
+.t-lib { font-size: 12px; line-height: 1.2; color: var(--ink-soft); }
+.t-val { font-size: 15.5px; line-height: 1.2; font-weight: 700; font-variant-numeric: tabular-nums; }
+.prix { margin-left: auto; font-size: 16.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.prix.conseil { font-size: 14.5px; font-weight: 500; color: var(--ink-soft); }
+.fiche.faite .prix { margin-left: 0; }
+.fiche.faite .payer, .fiche.faite .fixer, .fiche.faite .tag-paye { margin-left: auto; }
+.payer, .fixer {
+  min-height: 44px; padding: 0 16px; border: 0; border-radius: 22px; font-size: 15px; font-weight: 700; white-space: nowrap;
+}
+.payer { background: var(--gold-bg); color: var(--gold); }
+.fixer { background: var(--surface-2); }
+.tag-paye {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px 0 10px; border-radius: 16px;
+  background: var(--gold-bg); color: var(--gold); font-size: 14.5px; font-weight: 700;
+}
+.tag-paye svg { width: 14px; height: 14px; }
+
+/* Sauvegarde */
+.garde { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 18px; text-align: center; }
+.garde p { margin: 0; font-size: 14px; color: var(--ink-soft); text-wrap: balance; }
+
+/* Quai : chrono en cours + bouton d'ajout, sous le pouce */
+.quai {
+  position: fixed; inset: auto 0 0 0; z-index: 5; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 30px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: linear-gradient(to bottom, var(--bg-0), var(--bg) 44%);
+  pointer-events: none;
+}
+.quai > * { pointer-events: auto; width: 100%; max-width: 440px; }
+.ajouter {
+  display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px;
+  border: 0; border-radius: 28px; background: var(--ink); color: var(--bg);
+  font: 700 17.5px/1 var(--font-display); box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+}
+.ajouter .plus { font-size: 24px; font-weight: 500; line-height: 1; margin-top: -2px; }
+.chrono-barre {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px;
+  min-height: 60px; padding: 6px 6px 6px 18px; border-radius: 30px;
+  background: var(--surface); box-shadow: var(--shadow), 0 0 0 1px var(--line);
+}
+.point { width: 10px; height: 10px; border-radius: 50%; background: var(--live); }
+.chrono-barre .nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.chrono-barre .temps { font: 700 17px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.chrono-barre button {
+  min-height: 48px; padding: 0 18px; border: 0; border-radius: 24px;
+  background: var(--ink); color: var(--bg); font-weight: 700; font-size: 15px;
+}
+
+/* Bravo : la petite récompense, en haut de l'écran */
+.bravo {
+  position: fixed; left: 50%; top: calc(14px + env(safe-area-inset-top, 0px)); z-index: 30;
+  transform: translateX(-50%); display: flex; align-items: center; gap: 12px;
+  width: max-content; max-width: calc(100% - 32px); padding: 12px 20px 12px 14px; border-radius: 22px;
+  background: var(--ink); color: var(--bg); box-shadow: 0 12px 32px rgba(0, 0, 0, .25);
+}
+.bravo.simple { padding: 12px 18px; }
+.bravo-icone { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; }
+.bravo-icone.fin { background: var(--done); color: var(--done-ink); }
+.bravo-icone.paye { background: #F2B929; color: #3A2A00; font: 800 18px/1 var(--font-display); }
+.bravo-texte { display: flex; flex-direction: column; min-width: 0; }
+.bravo-texte strong { font: 700 17px/1.25 var(--font-display); }
+.bravo-texte span { font-size: 14px; opacity: .8; }
+#fete { position: fixed; inset: 0; z-index: 40; width: 100%; height: 100%; pointer-events: none; }
+
+/* Feuille de saisie : plein écran au téléphone, carte centrée sur grand écran */
+dialog.feuille {
+  inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; border: 0;
+  background: var(--bg); color: var(--ink); overflow: hidden;
+}
+dialog::backdrop { background: var(--backdrop); }
+@media (min-width: 700px) {
+  dialog.feuille { margin: auto; width: 560px; height: min(800px, 92%); border-radius: 24px; }
+}
+.feuille form { display: flex; flex-direction: column; height: 100%; }
+.feuille-tete {
+  flex: none; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+}
+.feuille-tete h2 { margin: 0; min-width: 0; text-align: center; font: 700 17px/1.2 var(--font-display); }
+.feuille-tete .annuler { min-height: 44px; padding: 0 6px; border: 0; background: none; font-weight: 600; color: var(--ink-soft); }
+.feuille-tete .enregistrer {
+  min-height: 44px; padding: 0 18px; border: 0; border-radius: 22px; background: var(--ink); color: var(--bg); font-weight: 700;
+}
+.feuille-corps {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  display: flex; flex-direction: column; gap: 22px;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(48px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.champ { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.champ > label, .champ > .lib { font-size: 14.5px; font-weight: 600; }
+.aide { margin: 0; font-size: 14px; color: var(--ink-soft); }
+.saisie {
+  display: block; width: 100%; min-height: 52px; padding: 13px 14px;
+  border: 1.5px solid transparent; border-radius: 14px; background: var(--surface); font-size: 17px;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.saisie:focus { outline: none; border-color: var(--ink); box-shadow: none; }
+textarea.saisie { min-height: 96px; line-height: 1.4; resize: vertical; }
+.saisie::placeholder { color: var(--ink-soft); opacity: .7; }
+.erreur { margin: 0; padding: 12px 14px; border-radius: 14px; background: var(--late-bg); color: var(--late); font-weight: 600; font-size: 14.5px; }
+
+.puces { display: flex; flex-wrap: wrap; gap: 8px; }
+.puce {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 16px; border: 0; border-radius: 22px; background: var(--surface-2);
+  font-size: 15px; font-weight: 600; white-space: nowrap; cursor: pointer;
+}
+.puce.forte { background: var(--ink); color: var(--bg); }
+.sr:focus-visible + .puce, .puce:has(+ .sr:focus-visible) { outline: 2.5px solid var(--ink); outline-offset: 2px; }
+
+.avec-unite { position: relative; }
+.avec-unite > span { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); pointer-events: none; }
+.avec-unite .saisie { padding-right: 56px; }
+.deux { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.rangee {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 8px 14px;
+  border-radius: 14px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font-weight: 600;
+}
+.interrupteur {
+  -webkit-appearance: none; appearance: none; flex: none; position: relative; width: 52px; height: 32px; margin: 0;
+  border-radius: 16px; background: var(--line-strong); cursor: pointer;
+}
+.interrupteur::before {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--knob); box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+}
+.interrupteur:checked { background: var(--done); }
+.interrupteur:checked::before { transform: translateX(20px); }
+
+.note-chrono {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 10px 10px 14px; border-radius: 14px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line);
+  font-weight: 600; font-variant-numeric: tabular-nums;
+}
+
+details.plus { border-top: 1px solid var(--line); }
+details.plus > summary {
+  display: flex; align-items: center; justify-content: space-between; min-height: 56px;
+  font-weight: 600; cursor: pointer; list-style: none;
+}
+details.plus > summary::-webkit-details-marker { display: none; }
+details.plus > summary::after {
+  content: ""; width: 9px; height: 9px; margin-right: 6px; border-right: 2px solid var(--ink-soft); border-bottom: 2px solid var(--ink-soft);
+  transform: rotate(45deg);
+}
+details.plus[open] > summary::after { transform: rotate(-135deg); }
+.plus-corps { display: flex; flex-direction: column; gap: 22px; padding-bottom: 6px; }
+
+.fourn { list-style: none; margin: 0; padding: 0; border-radius: 14px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.fourn li { display: flex; align-items: center; gap: 6px; padding: 0 4px 0 14px; }
+.fourn li + li { border-top: 1px solid var(--line); }
+.coche { display: flex; align-items: center; gap: 12px; flex: 1; min-height: 52px; min-width: 0; }
+.coche input { flex: none; width: 24px; height: 24px; margin: 0; accent-color: var(--done); }
+.coche span { min-width: 0; overflow-wrap: anywhere; }
+.retirer { flex: none; width: 48px; height: 48px; border: 0; border-radius: 50%; background: none; font-size: 24px; line-height: 1; color: var(--ink-soft); }
+.fourn-ajout { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.fourn-ajout .puce { min-height: 52px; border-radius: 14px; }
+
+.suppr { display: flex; flex-direction: column; gap: 12px; padding-top: 18px; border-top: 1px solid var(--line); }
+.suppr p { margin: 0; font-weight: 600; }
+.suppr-choix { display: flex; flex-wrap: wrap; gap: 10px; }
+.lien-danger { align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: none; font-weight: 700; color: var(--late); }
+.danger { min-height: 48px; padding: 0 20px; border: 0; border-radius: 24px; background: var(--late); color: var(--surface); font-weight: 700; }
+.discret { min-height: 48px; padding: 0 20px; border: 0; border-radius: 24px; background: var(--surface-2); font-weight: 700; }
+
+/* Petites feuilles : taux horaire, restauration */
+dialog.petit {
+  width: min(400px, calc(100% - 32px)); margin: max(24px, 12vh) auto auto; padding: 22px; border: 0; border-radius: 24px;
+  background: var(--bg); color: var(--ink); box-shadow: var(--shadow);
+}
+dialog.petit form { display: flex; flex-direction: column; gap: 14px; }
+dialog.petit h2 { margin: 0; font: 700 21px/1.2 var(--font-display); }
+dialog.petit p { margin: 0; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.actions button { min-height: 52px; border: 0; border-radius: 26px; font-weight: 700; }
+.actions .annuler { background: var(--surface-2); }
+.actions .valider { background: var(--ink); color: var(--bg); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .onglet, .taux, .chrono-btn, .payer, .fixer, .ajouter, .puce, .coche-fin, .chrono-barre button, .actions button, .enregistrer {
+    transition: transform .12s ease, background-color .15s ease;
+  }
+  .onglet:active, .taux:active, .chrono-btn:active, .payer:active, .fixer:active, .ajouter:active, .puce:active,
+  .chrono-barre button:active, .actions button:active, .enregistrer:active { transform: scale(.96); }
+  .coche-fin:active .rond { transform: scale(.88); }
+  .rond { transition: transform .12s ease, background-color .18s ease, border-color .18s ease; }
+  .interrupteur, .interrupteur::before { transition: background-color .18s ease, transform .18s ease; }
+  .fiche.en-fete .rond { animation: pop .5s cubic-bezier(.3, 1.7, .5, 1); }
+  .fiche.en-fete .rond svg { transition: stroke-dashoffset .28s ease-out .1s; }
+  .fiche.en-fete .fiche-titre { transition: color .3s ease .15s; color: var(--ink-soft); }
+  .tag-paye.pop { animation: pop .5s cubic-bezier(.3, 1.7, .5, 1); }
+  .bilan dd.bump { animation: bump .6s ease; }
+  .bravo { animation: descend .4s cubic-bezier(.2, 1.3, .4, 1); }
+  .point { animation: bat 1.4s ease-in-out infinite; }
+  @keyframes pop { 0% { transform: scale(.6); } 60% { transform: scale(1.22); } 100% { transform: scale(1); } }
+  @keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.12); } 100% { transform: scale(1); } }
+  @keyframes descend { from { transform: translate(-50%, -140%); } to { transform: translate(-50%, 0); } }
+  @keyframes bat { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+}
+</style>
+</head>
+<body>
+
+<main class="page">
+  <div class="cote">
+    <header class="tete">
+      <div>
+        <p class="etiquette" id="dateJour">Aujourd'hui</p>
+        <h1>Carnet d'atelier</h1>
+      </div>
+      <button type="button" class="taux" id="btnTaux">Taux horaire</button>
+    </header>
+
+    <aside class="astuce" id="astuce" hidden>
+      <strong>À faire en premier</strong>
+      <p>Touchez le bouton Partager de Safari, puis « Sur l'écran d'accueil ». Ouvrez ensuite le carnet depuis son icône : c'est là que vos projets seront gardés. Ceux notés ici, dans Safari, ne suivront pas.</p>
+    </aside>
+
+    <section class="mois" aria-labelledby="moisTitre">
+      <h2 class="etiquette" id="moisTitre">Ce mois-ci</h2>
+      <dl class="bilan">
+        <div><dt id="bFinisLib">terminé</dt><dd id="bFinis">0</dd></div>
+        <div class="or"><dt>encaissés</dt><dd id="bEncaisse">0 €</dd></div>
+        <div><dt>à encaisser</dt><dd id="bDu">0 €</dd></div>
+      </dl>
+    </section>
+  </div>
+
+  <section class="travail" aria-labelledby="projetsTitre">
+    <h2 class="sr" id="projetsTitre">Projets</h2>
+    <div class="onglets" id="onglets" role="group" aria-label="Afficher">
+      <button type="button" class="onglet" data-vue="a-faire" aria-pressed="true">À faire <span class="nb" id="nbAFaire"></span></button>
+      <button type="button" class="onglet" data-vue="termines" aria-pressed="false">Terminés <span class="nb" id="nbTermines"></span></button>
+    </div>
+    <p class="etat" id="etat" role="alert" hidden></p>
+    <ul class="fiches" id="liste"></ul>
+    <p class="vide" id="vide" hidden></p>
+
+    <footer class="garde" id="garde">
+      <p id="gardeTexte">Vos projets sont gardés sur cet appareil.</p>
+      <div class="puces">
+        <button type="button" class="puce" id="btnSauver">Faire une sauvegarde</button>
+        <label class="puce" for="fRestaurer">Restaurer</label>
+        <input class="sr" type="file" id="fRestaurer" accept="application/json,text/plain,.json,.txt">
+      </div>
+    </footer>
+  </section>
+</main>
+
+<div class="quai" id="quai">
+  <div class="chrono-barre" id="chronoBarre" hidden>
+    <span class="point" aria-hidden="true"></span>
+    <span class="nom" id="chronoNom"></span>
+    <span class="temps" id="chronoTemps" aria-live="off"></span>
+    <button type="button" id="btnChronoArret">Arrêter</button>
+  </div>
+  <button type="button" class="ajouter" id="btnNouveau"><span class="plus" aria-hidden="true">+</span>Nouveau projet</button>
+</div>
+
+<div class="bravo" id="bravo" role="status" aria-live="polite" hidden>
+  <span class="bravo-icone" id="bravoIcone" aria-hidden="true"></span>
+  <span class="bravo-texte"><strong id="bravoTitre"></strong><span id="bravoSous"></span></span>
+</div>
+<canvas id="fete" hidden aria-hidden="true"></canvas>
+
+<dialog class="feuille" id="feuille" aria-labelledby="feuilleTitre">
+  <form id="formProjet" novalidate>
+    <header class="feuille-tete">
+      <button type="button" class="annuler" id="btnAnnuler">Annuler</button>
+      <h2 id="feuilleTitre">Nouveau projet</h2>
+      <button type="submit" class="enregistrer" id="btnEnregistrer">Enregistrer</button>
+    </header>
+    <div class="feuille-corps" id="feuilleCorps">
+      <p class="erreur" id="fErreur" role="alert" hidden></p>
+
+      <div class="champ">
+        <label for="fTitre">Quoi ?</label>
+        <input class="saisie" type="text" id="fTitre" maxlength="120" autocomplete="off" enterkeyhint="next" placeholder="Trousse de toilette, housse de coussin…">
+      </div>
+
+      <div class="champ">
+        <label for="fQui">Pour qui ?</label>
+        <input class="saisie" type="text" id="fQui" maxlength="120" autocomplete="off" enterkeyhint="next" placeholder="Une voisine, une collègue…">
+      </div>
+
+      <div class="champ">
+        <label for="fQuand">Pour quand ?</label>
+        <div class="puces" id="pucesDate">
+          <button type="button" class="puce" data-jours="7">Dans 1 semaine</button>
+          <button type="button" class="puce" data-jours="14">Dans 2 semaines</button>
+          <button type="button" class="puce" data-jours="30">Dans 1 mois</button>
+          <button type="button" class="puce" data-jours="">Pas de date</button>
+        </div>
+        <input class="saisie" type="date" id="fQuand">
+      </div>
+
+      <div class="champ" id="blocTemps">
+        <span class="lib">Temps passé</span>
+        <p class="aide">Le chrono le remplit tout seul. Vous pouvez aussi l'écrire ou le corriger à la main.</p>
+        <div class="note-chrono" id="chronoNote" hidden>
+          <span>Chrono en cours : <span id="chronoNoteTemps"></span></span>
+          <button type="button" class="puce forte" id="btnChronoStop">Arrêter</button>
+        </div>
+        <div class="deux" id="champsTemps">
+          <div class="avec-unite"><input class="saisie" type="text" id="fHeures" inputmode="numeric" autocomplete="off" aria-label="Heures" placeholder="0"><span aria-hidden="true">h</span></div>
+          <div class="avec-unite"><input class="saisie" type="text" id="fMinutes" inputmode="numeric" autocomplete="off" aria-label="Minutes" placeholder="0"><span aria-hidden="true">min</span></div>
+        </div>
+      </div>
+
+      <div class="champ">
+        <label for="fPrix">Prix</label>
+        <div class="avec-unite">
+          <input class="saisie" type="text" id="fPrix" inputmode="decimal" autocomplete="off" enterkeyhint="done" placeholder="35">
+          <span aria-hidden="true">€</span>
+        </div>
+        <div class="puces"><button type="button" class="puce forte" id="btnConseil" hidden></button></div>
+        <p class="aide" id="conseilAide" hidden></p>
+      </div>
+
+      <label class="rangee" for="fPaye"><span>Déjà payé</span><input type="checkbox" class="interrupteur" id="fPaye"></label>
+      <label class="rangee" for="fFait" id="rangeeFait" hidden><span>Projet terminé</span><input type="checkbox" class="interrupteur" id="fFait"></label>
+
+      <details class="plus" id="plus">
+        <summary>Mesures, notes et fournitures</summary>
+        <div class="plus-corps">
+          <div class="champ">
+            <label for="fNotes">Mesures et notes</label>
+            <textarea class="saisie" id="fNotes" maxlength="4000" placeholder="45 × 45 cm, velours côtelé, passepoil…"></textarea>
+          </div>
+          <div class="champ">
+            <span class="lib">Fournitures</span>
+            <p class="aide">Cochez ce que vous avez déjà. Le reste s'affiche « à acheter » sur la fiche.</p>
+            <ul class="fourn" id="fournListe" hidden></ul>
+            <div class="fourn-ajout">
+              <input class="saisie" type="text" id="fFournNom" maxlength="120" autocomplete="off" enterkeyhint="done" aria-label="Fourniture à ajouter" placeholder="Fermeture 25 cm, biais…">
+              <button type="button" class="puce" id="btnFournAjout">Ajouter</button>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div class="suppr" id="zoneSuppr" hidden>
+        <button type="button" class="lien-danger" id="btnSuppr">Supprimer ce projet</button>
+        <div id="supprConfirme" hidden>
+          <p>Supprimer ce projet pour de bon ?</p>
+          <div class="suppr-choix" style="margin-top: 12px;">
+            <button type="button" class="danger" id="btnSupprOui">Oui, supprimer</button>
+            <button type="button" class="discret" id="btnSupprNon">Non, le garder</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="petit" id="tauxFeuille" aria-labelledby="tauxTitre">
+  <form id="formTaux" novalidate>
+    <h2 id="tauxTitre">Taux horaire</h2>
+    <p class="aide">Il sert à proposer un prix : le temps passé multiplié par ce taux.</p>
+    <div class="avec-unite">
+      <input class="saisie" type="text" id="fTaux" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="Taux horaire en euros" placeholder="15">
+      <span aria-hidden="true">€ / h</span>
+    </div>
+    <p class="erreur" id="tauxErreur" role="alert" hidden></p>
+    <div class="actions">
+      <button type="button" class="annuler" id="btnTauxAnnuler">Annuler</button>
+      <button type="submit" class="valider" id="btnTauxOk">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="petit" id="restaurerFeuille" aria-labelledby="restaurerTitre">
+  <form id="formRestaurer" novalidate>
+    <h2 id="restaurerTitre">Restaurer la sauvegarde ?</h2>
+    <p id="restaurerTexte"></p>
+    <div class="actions">
+      <button type="button" class="annuler" id="btnRestaurerNon">Annuler</button>
+      <button type="submit" class="valider">Oui, remplacer</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  "use strict";
+
+  const CLE = "carnet-atelier:v1";
+  const RE_DATE = /^\d{4}-\d{2}-\d{2}$/;
+  const $ = (id) => document.getElementById(id);
+  const reduit = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+
+  const state = {
+    projets: [],
+    taux: null,        // taux horaire en euros, ou null s'il n'est pas réglé
+    sauvegardeLe: "",  // date de la dernière sauvegarde
+    vue: "a-faire",    // a-faire | termines
+    bloque: false,     // vrai si l'appareil refuse d'enregistrer
+    pop: null,         // id de la fiche qui vient d'être payée (petite animation)
+  };
+
+  /* ---------- Dates, durées, formats ---------- */
+  const fmtLong = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  const fmtCourt = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" });
+  const fmtSemaine = new Intl.DateTimeFormat("fr-FR", { weekday: "long" });
+  const fmtMois = new Intl.DateTimeFormat("fr-FR", { month: "long" });
+
+  const pad = (n) => String(n).padStart(2, "0");
+  const isoLocal = (d) => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  function deIso(s) {
+    const m = s.split("-").map(Number);
+    return new Date(m[0], m[1] - 1, m[2]);
+  }
+  function aujourdHui() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+  const ecartJours = (iso) => Math.round((deIso(iso) - aujourdHui()) / 864e5);
+  const capitale = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const moisCourant = () => fmtMois.format(new Date());
+  function dansCeMois(iso) {
+    if (!iso) return false;
+    const d = new Date(iso), n = new Date();
+    return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth();
+  }
+
+  function euros(n) {
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency", currency: "EUR",
+      minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2,
+    }).format(n);
+  }
+  // 5 400 000 ms -> « 1 h 30 »
+  function duree(ms) {
+    const min = Math.round(ms / 60000);
+    if (min < 1) return "moins d'1 min";
+    if (min < 60) return min + " min";
+    const h = Math.floor(min / 60), r = min % 60;
+    return r ? h + " h " + pad(r) : h + " h";
+  }
+  const dureeCourte = (ms) => (ms < 60000 ? "0 min" : duree(ms));
+  // chrono qui tourne -> « 0:42:15 »
+  function horloge(ms) {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    return Math.floor(s / 3600) + ":" + pad(Math.floor(s / 60) % 60) + ":" + pad(s % 60);
+  }
+  const ordinal = (n) => (n === 1 ? "1er" : n + "e");
+
+  function quand(p) {
+    if (!p.echeance) return null;
+    const n = ecartJours(p.echeance);
+    const d = deIso(p.echeance);
+    if (n < 0) {
+      const t = n === -1 ? "en retard d'un jour" : "en retard de " + (-n) + " jours";
+      return { court: t, seul: capitale(t), cls: "retard" };
+    }
+    if (n === 0) return { court: "aujourd'hui", seul: "Pour aujourd'hui", cls: "proche" };
+    if (n === 1) return { court: "demain", seul: "Pour demain", cls: "proche" };
+    if (n < 7) return { court: fmtSemaine.format(d), seul: "Pour " + fmtSemaine.format(d), cls: "" };
+    return { court: "le " + fmtCourt.format(d), seul: "Pour le " + fmtCourt.format(d), cls: "" };
+  }
+
+  /* ---------- Données : tout est gardé sur l'appareil ---------- */
+  const str = (v) => (typeof v === "string" ? v : "");
+  const estFait = (p) => p.statut === "termine";
+  const tauxValide = (v) => (typeof v === "number" && isFinite(v) && v > 0 ? v : null);
+
+  function normaliser(d) {
+    d = d || {};
+    const fait = d.statut === "termine";
+    const paye = d.paye === true;
+    const depuis = str(d.chronoDepuis);
+    return {
+      id: str(d.id),
+      titre: str(d.titre),
+      pourQui: str(d.pourQui),
+      echeance: RE_DATE.test(str(d.echeance)) ? d.echeance : "",
+      statut: fait ? "termine" : "a-faire",
+      termineLe: fait ? (str(d.termineLe) || str(d.majLe)) : "",
+      prix: typeof d.prix === "number" && isFinite(d.prix) && d.prix >= 0 ? d.prix : null,
+      paye: paye,
+      payeLe: paye ? (str(d.payeLe) || str(d.majLe)) : "",
+      tempsMs: typeof d.tempsMs === "number" && isFinite(d.tempsMs) && d.tempsMs > 0 ? Math.floor(d.tempsMs) : 0,
+      chronoDepuis: !fait && depuis && !isNaN(Date.parse(depuis)) ? depuis : "",
+      fournitures: Array.isArray(d.fournitures)
+        ? d.fournitures.filter((f) => f && typeof f.nom === "string").map((f) => ({ nom: f.nom, ok: f.ok === true }))
+        : [],
+      notes: str(d.notes),
+      creeLe: str(d.creeLe),
+      majLe: str(d.majLe),
+    };
+  }
+  const projetsValides = (liste) => (Array.isArray(liste) ? liste : []).map(normaliser).filter((p) => p.id);
+
+  function charger() {
+    let brut = null;
+    try {
+      localStorage.setItem(CLE + ":essai", "1");
+      localStorage.removeItem(CLE + ":essai");
+      brut = localStorage.getItem(CLE);
+    } catch (e) {
+      state.bloque = true;
+      return;
+    }
+    if (!brut) return;
+    try {
+      const d = JSON.parse(brut);
+      state.projets = projetsValides(d.projets);
+      state.taux = tauxValide(d.taux);
+      state.sauvegardeLe = str(d.sauvegardeLe);
+    } catch (e) {
+      // Données illisibles : on les met de côté plutôt que de les écraser.
+      try { localStorage.setItem(CLE + ":illisible:" + Date.now(), brut); } catch (e2) { /* tant pis */ }
+    }
+  }
+  function ecrire() {
+    try {
+      localStorage.setItem(CLE, JSON.stringify({ version: 1, taux: state.taux, sauvegardeLe: state.sauvegardeLe, projets: state.projets }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  const REFUS = "Enregistrement impossible : l'appareil refuse d'écrire. Faites de la place, puis réessayez.";
+
+  function enregistrer(p) {
+    const maintenant = new Date().toISOString();
+    const fiche = Object.assign({}, p, { majLe: maintenant });
+    if (!fiche.creeLe) fiche.creeLe = maintenant;
+    if (!fiche.id) fiche.id = "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    const avant = state.projets;
+    const i = avant.findIndex((x) => x.id === fiche.id);
+    state.projets = i >= 0 ? avant.map((x, j) => (j === i ? fiche : x)) : avant.concat([fiche]);
+    if (!ecrire()) {
+      state.projets = avant;
+      return { ok: false, message: REFUS };
+    }
+    render();
+    return { ok: true };
+  }
+  function supprimer(id) {
+    const avant = state.projets;
+    state.projets = avant.filter((x) => x.id !== id);
+    if (!ecrire()) {
+      state.projets = avant;
+      return { ok: false, message: REFUS };
+    }
+    render();
+    return { ok: true };
+  }
+  // Pour les gestes rapides : on signale seulement un échec.
+  function enregistrerVite(p) {
+    const r = enregistrer(p);
+    if (!r.ok) annoncer(r.message);
+    return r.ok;
+  }
+
+  const trouver = (id) => state.projets.find((p) => p.id === id) || null;
+  const tempsTotal = (p) => p.tempsMs + (p.chronoDepuis ? Math.max(0, Date.now() - Date.parse(p.chronoDepuis)) : 0);
+  const chronoArrete = (p) => Object.assign({}, p, { tempsMs: tempsTotal(p), chronoDepuis: "" });
+  function prixConseille(ms) {
+    if (!state.taux || ms < 60000) return null;
+    return Math.max(1, Math.round((ms / 3600000) * state.taux));
+  }
+
+  /* ---------- Petits outils d'affichage ---------- */
+  const ICONES = {
+    coche: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    lecture: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>',
+  };
+  function icone(nom) {
+    const s = document.createElement("span");
+    s.className = "ico" + (nom === "coche" ? " trait" : "");
+    s.innerHTML = ICONES[nom];
+    return s;
+  }
+  function el(tag, attrs) {
+    const n = document.createElement(tag);
+    if (attrs) {
+      for (const k of Object.keys(attrs)) {
+        const v = attrs[k];
+        if (v == null || v === false) continue;
+        if (k === "class") n.className = v;
+        else if (k === "text") n.textContent = v;
+        else n.setAttribute(k, v === true ? "" : v);
+      }
+    }
+    const enfants = Array.prototype.slice.call(arguments, 2).flat(Infinity);
+    for (const c of enfants) if (c != null && c !== false) n.append(c);
+    return n;
+  }
+  function remplir(parent, enfants) {
+    parent.replaceChildren.apply(parent, enfants);
+  }
+
+  // Un chiffre qui monte : c'est la récompense.
+  function poserNombre(elm, valeur, format) {
+    const avant = elm._valeur;
+    elm._valeur = valeur;
+    if (elm._raf) { cancelAnimationFrame(elm._raf); elm._raf = 0; }
+    if (typeof avant !== "number" || avant === valeur || reduit.matches) { elm.textContent = format(valeur); return; }
+    const t0 = performance.now();
+    elm.classList.remove("bump");
+    void elm.offsetWidth;
+    elm.classList.add("bump");
+    const pas = (t) => {
+      const k = Math.min(1, (t - t0) / 750), e = 1 - Math.pow(1 - k, 3);
+      elm.textContent = format(k < 1 ? Math.round(avant + (valeur - avant) * e) : valeur);
+      elm._raf = k < 1 ? requestAnimationFrame(pas) : 0;
+    };
+    elm._raf = requestAnimationFrame(pas);
+  }
+
+  let minuteurBravo = 0;
+  // ton : "fin" (coche verte), "paye" (pièce), ou rien pour un simple message.
+  function annoncer(titre, sous, ton) {
+    const b = $("bravo");
+    $("bravoTitre").textContent = titre;
+    $("bravoSous").textContent = sous || "";
+    $("bravoSous").hidden = !sous;
+    const ic = $("bravoIcone");
+    ic.hidden = !ton;
+    ic.className = "bravo-icone" + (ton ? " " + ton : "");
+    if (ton === "fin") remplir(ic, [icone("coche")]);
+    else if (ton === "paye") ic.textContent = "€";
+    b.className = "bravo" + (ton ? "" : " simple");
+    b.hidden = true;
+    void b.offsetWidth;
+    b.hidden = false;
+    clearTimeout(minuteurBravo);
+    minuteurBravo = setTimeout(() => { b.hidden = true; }, ton ? 3600 : 3000);
+  }
+
+  /* ---------- La fête : boutons et chutes de tissu, ou pièces ---------- */
+  const TEINTES = ["#E4572E", "#F2B134", "#2E9E6B", "#3A6FD8", "#C95D9B", "#7A5AC8"];
+  const toile = $("fete");
+  const ctx = toile.getContext ? toile.getContext("2d") : null;
+  let grains = [], rafFete = 0, tPrec = 0;
+
+  function confettis(x, y, genre) {
+    if (reduit.matches || !ctx) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.round(window.innerWidth * dpr), h = Math.round(window.innerHeight * dpr);
+    if (toile.width !== w || toile.height !== h) { toile.width = w; toile.height = h; }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = genre === "paye" ? 24 : 40;
+    for (let i = 0; i < n; i++) {
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * 2.3;
+      const v = 6 + Math.random() * 10;
+      grains.push({
+        x: x, y: y, vx: Math.cos(angle) * v, vy: Math.sin(angle) * v,
+        rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.4,
+        t: 0, vie: 75 + Math.random() * 40,
+        taille: genre === "paye" ? 15 + Math.random() * 7 : 9 + Math.random() * 8,
+        forme: genre === "paye" ? "piece" : (Math.random() < 0.45 ? "bouton" : "chute"),
+        couleur: TEINTES[i % TEINTES.length],
+      });
+    }
+    toile.hidden = false;
+    if (!rafFete) { tPrec = performance.now(); rafFete = requestAnimationFrame(pasFete); }
+  }
+  function pasFete(t) {
+    const k = Math.min(2.5, (t - tPrec) / 16.67);
+    tPrec = t;
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    grains = grains.filter((g) => g.t < g.vie && g.y < window.innerHeight + 40);
+    for (const g of grains) {
+      g.t += k;
+      g.vy += 0.42 * k;
+      g.vx *= Math.pow(0.985, k);
+      g.x += g.vx * k;
+      g.y += g.vy * k;
+      g.rot += g.vr * k;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, (g.vie - g.t) / 18));
+      ctx.translate(g.x, g.y);
+      ctx.rotate(g.rot);
+      const r = g.taille / 2;
+      if (g.forme === "chute") {
+        ctx.fillStyle = g.couleur;
+        ctx.fillRect(-r, -r * 0.65, g.taille, g.taille * 0.65);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, 6.2832);
+        ctx.fillStyle = g.forme === "piece" ? "#F2B929" : g.couleur;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.68, 0, 6.2832);
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = "rgba(0,0,0,.22)";
+        ctx.stroke();
+        if (g.forme === "bouton") {
+          ctx.fillStyle = "rgba(0,0,0,.4)";
+          ctx.beginPath();
+          ctx.arc(-r * 0.24, 0, r * 0.13, 0, 6.2832);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(r * 0.24, 0, r * 0.13, 0, 6.2832);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = "rgba(0,0,0,.55)";
+          ctx.font = "700 " + Math.round(r * 1.15) + "px sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("€", 0, 1);
+        }
+      }
+      ctx.restore();
+    }
+    if (grains.length) {
+      rafFete = requestAnimationFrame(pasFete);
+    } else {
+      rafFete = 0;
+      toile.hidden = true;
+    }
+  }
+  function centreDe(elm) {
+    if (!elm || !elm.getBoundingClientRect) return { x: window.innerWidth / 2, y: window.innerHeight * 0.35 };
+    const r = elm.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+
+  const finisCeMois = () => state.projets.filter((p) => estFait(p) && dansCeMois(p.termineLe)).length;
+  const encaisseCeMois = () => Math.round(state.projets.reduce((s, p) => s + (p.paye && p.prix && dansCeMois(p.payeLe) ? p.prix : 0), 0) * 100) / 100;
+
+  function feterFin(origine, dejaCompte) {
+    const c = centreDe(origine);
+    confettis(c.x, c.y, "fin");
+    annoncer("Terminé !", ordinal(finisCeMois() + (dejaCompte ? 0 : 1)) + " projet fini en " + moisCourant(), "fin");
+  }
+  function feterPaye(origine, prix, dejaCompte) {
+    const c = centreDe(origine);
+    confettis(c.x, c.y, "paye");
+    const total = Math.round((encaisseCeMois() + (dejaCompte ? 0 : prix)) * 100) / 100;
+    annoncer("+ " + euros(prix), euros(total) + " encaissés en " + moisCourant(), "paye");
+  }
+
+  /* ---------- Rendu ---------- */
+  function renderBilan() {
+    $("moisTitre").textContent = "En " + moisCourant();
+    const finis = finisCeMois();
+    const du = Math.round(state.projets.reduce((s, p) => s + (estFait(p) && !p.paye && p.prix ? p.prix : 0), 0) * 100) / 100;
+    poserNombre($("bFinis"), finis, String);
+    $("bFinisLib").textContent = finis > 1 ? "terminés" : "terminé";
+    poserNombre($("bEncaisse"), encaisseCeMois(), euros);
+    poserNombre($("bDu"), du, euros);
+    $("btnTaux").textContent = state.taux ? euros(state.taux) + " / h" : "Taux horaire";
+    $("btnTaux").setAttribute("aria-label", state.taux ? "Taux horaire : " + euros(state.taux) + " de l'heure. Modifier" : "Régler mon taux horaire");
+  }
+
+  function renderOnglets() {
+    $("nbAFaire").textContent = String(state.projets.filter((p) => !estFait(p)).length);
+    $("nbTermines").textContent = String(state.projets.filter(estFait).length);
+    for (const b of $("onglets").querySelectorAll("[data-vue]")) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-vue") === state.vue));
+    }
+  }
+
+  // Le temps passé, toujours visible sur la fiche. Le toucher ouvre la fiche sur les cases heures et minutes.
+  function blocTemps(p) {
+    const tourne = !!p.chronoDepuis;
+    return el("button", { type: "button", class: "temps-bloc", "data-temps": p.id, "aria-label": "Temps passé : " + dureeCourte(tempsTotal(p)) + ". Modifier" },
+      el("span", { class: "t-lib", text: "Temps passé" }),
+      el("span", { class: "t-val", "data-chrono": tourne ? p.id : null, text: tourne ? horloge(tempsTotal(p)) : dureeCourte(p.tempsMs) }));
+  }
+
+  function ficheAFaire(p) {
+    const q = quand(p);
+    const tourne = !!p.chronoDepuis;
+    const total = tempsTotal(p);
+    const manquent = p.fournitures.filter((f) => !f.ok);
+
+    const sous = el("span", { class: "fiche-sous" },
+      p.pourQui ? el("span", { class: "qui", text: "Pour " + p.pourQui }) : null,
+      q ? el("span", { class: "quand" + (q.cls ? " " + q.cls : ""), text: p.pourQui ? q.court : q.seul }) : null,
+      !p.pourQui && !q ? el("span", { text: "Sans date" }) : null);
+
+    const ouvrir = el("button", { type: "button", class: "fiche-ouvrir", "data-ouvrir": p.id },
+      el("span", { class: "fiche-titre", text: p.titre || "Projet sans nom" }),
+      sous,
+      manquent.length > 0 ? el("span", { class: "fiche-ligne", text: "À acheter : " + manquent.map((f) => f.nom).join(", ") }) : null);
+
+    const pied = el("div", { class: "fiche-pied" },
+      el("button", {
+        type: "button", class: "chrono-btn" + (tourne ? " actif" : ""), "data-chrono-btn": p.id,
+        "aria-label": (tourne ? "Arrêter le chrono de " : "Lancer le chrono pour ") + (p.titre || "ce projet"),
+      }, icone(tourne ? "pause" : "lecture"), el("span", { text: tourne ? "Arrêter" : "Chrono" })),
+      blocTemps(p));
+    const conseil = p.prix == null ? prixConseille(total) : null;
+    if (p.prix != null) pied.append(el("span", { class: "prix", text: euros(p.prix) }));
+    else if (conseil != null) pied.append(el("span", { class: "prix conseil", "data-conseil": p.id, text: "≈ " + euros(conseil) }));
+
+    return el("li", { class: "fiche", "data-id": p.id },
+      el("button", { type: "button", class: "coche-fin", "data-finir": p.id, "aria-label": "Marquer « " + (p.titre || "ce projet") + " » comme terminé" },
+        el("span", { class: "rond" }, icone("coche"))),
+      el("div", { class: "fiche-contenu" }, ouvrir, pied));
+  }
+
+  function ficheFaite(p) {
+    const sous = el("span", { class: "fiche-sous" },
+      p.pourQui ? el("span", { class: "qui", text: "Pour " + p.pourQui }) : null,
+      p.termineLe ? el("span", { class: "apres", text: (p.pourQui ? "terminé le " : "Terminé le ") + fmtCourt.format(new Date(p.termineLe)) }) : null);
+
+    const ouvrir = el("button", { type: "button", class: "fiche-ouvrir", "data-ouvrir": p.id },
+      el("span", { class: "fiche-titre", text: p.titre || "Projet sans nom" }), sous);
+
+    const pied = el("div", { class: "fiche-pied" }, blocTemps(p));
+    const conseil = p.prix == null ? prixConseille(p.tempsMs) : null;
+    if (p.prix != null) pied.append(el("span", { class: "prix", text: euros(p.prix) }));
+    else if (conseil != null) pied.append(el("span", { class: "prix conseil", text: "Conseillé : " + euros(conseil) }));
+    if (p.paye) pied.append(el("span", { class: "tag-paye" + (state.pop === p.id ? " pop" : "") }, icone("coche"), "Payé"));
+    else if (p.prix != null) pied.append(el("button", { type: "button", class: "payer", "data-payer": p.id, text: "Marquer payé" }));
+    else pied.append(el("button", { type: "button", class: "fixer", "data-fixer": p.id, text: "Fixer le prix" }));
+
+    return el("li", { class: "fiche faite", "data-id": p.id },
+      el("span", { class: "coche-fin", "aria-hidden": "true" }, el("span", { class: "rond" }, icone("coche"))),
+      el("div", { class: "fiche-contenu" }, ouvrir, pied));
+  }
+
+  const triEcheance = (a, b) => {
+    const da = a.echeance || "9999-99-99", db = b.echeance || "9999-99-99";
+    if (da !== db) return da < db ? -1 : 1;
+    return a.creeLe < b.creeLe ? -1 : a.creeLe > b.creeLe ? 1 : 0;
+  };
+  const triFaits = (a, b) => {
+    if (a.paye !== b.paye) return a.paye ? 1 : -1; // ce qui reste à encaisser d'abord
+    return a.termineLe > b.termineLe ? -1 : a.termineLe < b.termineLe ? 1 : 0;
+  };
+
+  function renderListe() {
+    const visibles = state.vue === "termines"
+      ? state.projets.filter(estFait).sort(triFaits)
+      : state.projets.filter((p) => !estFait(p)).sort(triEcheance);
+    remplir($("liste"), visibles.map(state.vue === "termines" ? ficheFaite : ficheAFaire));
+
+    let msg = "";
+    if (visibles.length === 0) {
+      if (state.projets.length === 0) msg = "Aucun projet pour l'instant. Touchez « Nouveau projet » pour noter le premier.";
+      else if (state.vue === "termines") msg = "Rien de terminé pour l'instant. Cochez le rond d'une fiche quand elle est finie.";
+      else msg = "Tout est fait. Rien en attente.";
+    }
+    $("vide").textContent = msg;
+    $("vide").hidden = !msg;
+  }
+
+  function renderChrono() {
+    const p = state.projets.find((x) => x.chronoDepuis) || null;
+    $("chronoBarre").hidden = !p;
+    document.body.classList.toggle("avec-chrono", !!p);
+    if (p) {
+      $("chronoNom").textContent = p.titre || "Projet sans nom";
+      $("chronoTemps").textContent = horloge(tempsTotal(p));
+      $("btnChronoArret").setAttribute("data-id", p.id);
+    }
+  }
+
+  function renderGarde() {
+    $("garde").hidden = state.bloque;
+    $("gardeTexte").textContent = "Vos projets sont gardés sur cet appareil. "
+      + (state.sauvegardeLe ? "Dernière sauvegarde : le " + fmtCourt.format(new Date(state.sauvegardeLe)) + "." : "Aucune sauvegarde pour l'instant.");
+  }
+
+  function render() {
+    $("etat").hidden = !state.bloque;
+    if (state.bloque) $("etat").textContent = "Ce navigateur refuse d'enregistrer les projets (navigation privée ?). Ouvrez le carnet depuis son icône, ou hors navigation privée.";
+    $("quai").hidden = state.bloque;
+    renderBilan();
+    renderOnglets();
+    renderListe();
+    renderChrono();
+    renderGarde();
+    if (feuille.open && brouillon) majConseil();
+  }
+
+  // Le chrono avance à l'écran chaque seconde ; rien n'est écrit tant qu'on ne l'arrête pas.
+  setInterval(() => {
+    if (document.hidden) return;
+    const p = state.projets.find((x) => x.chronoDepuis);
+    if (!p) return;
+    const t = tempsTotal(p), texte = horloge(t);
+    for (const n of document.querySelectorAll("[data-chrono]")) {
+      if (n.getAttribute("data-chrono") === p.id) n.textContent = texte;
+    }
+    $("chronoTemps").textContent = texte;
+    if (feuille.open && brouillon && brouillon.id === p.id && brouillon.chronoDepuis) $("chronoNoteTemps").textContent = texte;
+    const c = document.querySelector('[data-conseil="' + p.id + '"]');
+    const conseil = prixConseille(t);
+    if (c && conseil != null) c.textContent = "≈ " + euros(conseil);
+  }, 1000);
+
+  /* ---------- Gestes rapides ---------- */
+  function basculerChrono(id) {
+    const p = trouver(id);
+    if (!p) return;
+    if (p.chronoDepuis) {
+      const t = tempsTotal(p);
+      if (enregistrerVite(chronoArrete(p))) {
+        annoncer("Chrono arrêté", duree(t) + " sur ce projet" + (t - p.tempsMs > 8 * 3600000 ? ". Un oubli ? Corrigez le temps dans la fiche." : ""));
+      }
+      return;
+    }
+    // Un seul chrono à la fois : on arrête celui qui tournait.
+    for (const autre of state.projets.filter((x) => x.chronoDepuis && x.id !== id)) {
+      if (!enregistrerVite(chronoArrete(autre))) return;
+    }
+    enregistrerVite(Object.assign({}, p, { chronoDepuis: new Date().toISOString() }));
+  }
+
+  function terminer(id, bouton) {
+    if (!trouver(id)) return;
+    const li = bouton.closest(".fiche");
+    bouton.disabled = true;
+    if (li) li.classList.add("en-fete");
+    feterFin(bouton, false);
+    setTimeout(() => {
+      const vivant = trouver(id);
+      if (vivant) enregistrerVite(Object.assign({}, chronoArrete(vivant), { statut: "termine", termineLe: new Date().toISOString() }));
+    }, reduit.matches ? 0 : 700);
+  }
+
+  function payer(id, bouton) {
+    const p = trouver(id);
+    if (!p || p.prix == null) return;
+    state.pop = id;
+    setTimeout(() => { if (state.pop === id) state.pop = null; }, 1200);
+    feterPaye(bouton, p.prix, false);
+    enregistrerVite(Object.assign({}, p, { paye: true, payeLe: new Date().toISOString() }));
+  }
+
+  /* ---------- Feuille de saisie ---------- */
+  const feuille = $("feuille");
+  const tauxFeuille = $("tauxFeuille");
+  const restaurerFeuille = $("restaurerFeuille");
+  let brouillon = null;
+  let tempsModifie = false;
+
+  function ouvrirDialogue(d) {
+    if (typeof d.showModal === "function") d.showModal();
+    else d.setAttribute("open", "");
+  }
+  function fermerDialogue(d) {
+    if (typeof d.close === "function") d.close();
+    else d.removeAttribute("open");
+  }
+  function montrerErreur(msg) {
+    $("fErreur").textContent = msg;
+    $("fErreur").hidden = !msg;
+    if (msg) $("feuilleCorps").scrollTop = 0;
+  }
+
+  function renderFournitures() {
+    const lignes = brouillon.fournitures.map((f, i) => {
+      const id = "fFourn" + i;
+      const coche = el("input", { type: "checkbox", id: id, "data-coche": String(i) });
+      coche.checked = f.ok;
+      return el("li", null,
+        el("label", { class: "coche", for: id }, coche, el("span", { text: f.nom })),
+        el("button", { type: "button", class: "retirer", "data-retirer": String(i), "aria-label": "Retirer " + f.nom, text: "×" }));
+    });
+    remplir($("fournListe"), lignes);
+    $("fournListe").hidden = lignes.length === 0;
+  }
+
+  // Lit « heures » et « minutes ». Renvoie des millisecondes, ou null si ce n'est pas un nombre.
+  function lireTemps() {
+    const h = $("fHeures").value.trim(), m = $("fMinutes").value.trim();
+    if (!/^\d{0,4}$/.test(h) || !/^\d{0,4}$/.test(m)) return null;
+    return (Number(h || 0) * 60 + Number(m || 0)) * 60000;
+  }
+  function tempsDeLaFeuille() {
+    if (brouillon.chronoDepuis) return tempsTotal(brouillon);
+    if (!tempsModifie) return brouillon.tempsMs;
+    const t = lireTemps();
+    return t == null ? 0 : t;
+  }
+  function majTempsFeuille() {
+    const tourne = !!brouillon.chronoDepuis;
+    $("chronoNote").hidden = !tourne;
+    $("champsTemps").hidden = tourne;
+    if (tourne) {
+      $("chronoNoteTemps").textContent = horloge(tempsTotal(brouillon));
+    } else {
+      const min = Math.round(brouillon.tempsMs / 60000);
+      $("fHeures").value = min >= 60 ? String(Math.floor(min / 60)) : "";
+      $("fMinutes").value = min > 0 ? String(min % 60) : "";
+    }
+  }
+  function majConseil() {
+    const bouton = $("btnConseil"), aide = $("conseilAide");
+    const ms = tempsDeLaFeuille();
+    const conseil = prixConseille(ms);
+    aide.hidden = false;
+    if (!state.taux) {
+      bouton.hidden = false;
+      bouton.textContent = "Régler mon taux horaire";
+      bouton.setAttribute("data-action", "taux");
+      aide.textContent = "Avec un taux horaire, le prix se calcule tout seul à partir du temps passé.";
+    } else if (conseil == null) {
+      bouton.hidden = true;
+      aide.textContent = "Lancez le chrono ou notez le temps passé : le prix conseillé à " + euros(state.taux) + " / h s'affichera ici.";
+    } else {
+      bouton.hidden = false;
+      bouton.textContent = "Mettre " + euros(conseil);
+      bouton.setAttribute("data-action", "prix");
+      bouton.setAttribute("data-valeur", String(conseil));
+      aide.textContent = "Prix conseillé : " + duree(ms) + " à " + euros(state.taux) + " / h.";
+    }
+  }
+
+  function ouvrirFeuille(p, champAFocaliser) {
+    brouillon = p
+      ? JSON.parse(JSON.stringify(p))
+      : { id: "", titre: "", pourQui: "", echeance: "", statut: "a-faire", termineLe: "", prix: null, paye: false, payeLe: "",
+          tempsMs: 0, chronoDepuis: "", fournitures: [], notes: "", creeLe: "", majLe: "" };
+    tempsModifie = false;
+    $("feuilleTitre").textContent = p ? "Modifier" : "Nouveau projet";
+    $("fTitre").value = brouillon.titre;
+    $("fQui").value = brouillon.pourQui;
+    $("fQuand").value = brouillon.echeance;
+    $("fPrix").value = brouillon.prix == null ? "" : String(brouillon.prix).replace(".", ",");
+    $("fPaye").checked = brouillon.paye;
+    $("fFait").checked = estFait(brouillon);
+    $("fNotes").value = brouillon.notes;
+    $("fFournNom").value = "";
+    $("rangeeFait").hidden = !p;
+    majTempsFeuille();
+    renderFournitures();
+    majConseil();
+    montrerErreur("");
+    $("plus").open = !!(brouillon.notes || brouillon.fournitures.length);
+    $("zoneSuppr").hidden = !p;
+    $("btnSuppr").hidden = false;
+    $("supprConfirme").hidden = true;
+    ouvrirDialogue(feuille);
+    $("feuilleCorps").scrollTop = 0;
+    if (champAFocaliser) $(champAFocaliser).focus();
+    else if (!p) $("fTitre").focus();
+  }
+
+  function ajouterFourniture() {
+    const champ = $("fFournNom");
+    const nom = champ.value.trim();
+    if (!nom) return;
+    brouillon.fournitures.push({ nom: nom, ok: false });
+    champ.value = "";
+    renderFournitures();
+  }
+
+  $("btnFournAjout").addEventListener("click", () => {
+    ajouterFourniture();
+    $("fFournNom").focus();
+  });
+  $("fournListe").addEventListener("change", (e) => {
+    const i = e.target && e.target.getAttribute("data-coche");
+    if (i != null && brouillon.fournitures[Number(i)]) brouillon.fournitures[Number(i)].ok = e.target.checked;
+  });
+  $("fournListe").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-retirer]");
+    if (!b) return;
+    brouillon.fournitures.splice(Number(b.getAttribute("data-retirer")), 1);
+    renderFournitures();
+  });
+
+  $("pucesDate").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-jours]");
+    if (!b) return;
+    const j = b.getAttribute("data-jours");
+    if (j === "") { $("fQuand").value = ""; return; }
+    const d = aujourdHui();
+    d.setDate(d.getDate() + Number(j));
+    $("fQuand").value = isoLocal(d);
+  });
+
+  for (const id of ["fHeures", "fMinutes"]) {
+    $(id).addEventListener("input", () => { tempsModifie = true; majConseil(); });
+  }
+  $("btnChronoStop").addEventListener("click", () => {
+    const vivant = brouillon && brouillon.id ? trouver(brouillon.id) : null;
+    if (!vivant) return;
+    const arrete = chronoArrete(vivant);
+    const r = enregistrer(arrete);
+    if (!r.ok) { montrerErreur(r.message); return; }
+    brouillon.tempsMs = arrete.tempsMs;
+    brouillon.chronoDepuis = "";
+    majTempsFeuille();
+    majConseil();
+  });
+  $("btnConseil").addEventListener("click", () => {
+    if ($("btnConseil").getAttribute("data-action") === "taux") { ouvrirTaux(); return; }
+    $("fPrix").value = $("btnConseil").getAttribute("data-valeur");
+  });
+
+  // La touche Entrée ne valide pas la fiche par surprise : seul « Enregistrer » enregistre.
+  $("formProjet").addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" || e.isComposing) return;
+    const t = e.target;
+    if (!t || t.tagName !== "INPUT" || t.type === "checkbox") return;
+    e.preventDefault();
+    if (t.id === "fFournNom") ajouterFourniture();
+    else t.blur();
+  });
+
+  function lireEuros(texte) {
+    const t = texte.replace(/[€\s  ]/g, "").replace(",", ".");
+    if (t === "") return null;
+    const n = Number(t);
+    return isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : NaN;
+  }
+
+  $("formProjet").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!brouillon) return;
+    const titre = $("fTitre").value.trim();
+    if (!titre) {
+      montrerErreur("Donnez un nom au projet, par exemple « Trousse de toilette ».");
+      $("fTitre").focus();
+      return;
+    }
+    const prix = lireEuros($("fPrix").value);
+    if (prix !== null && isNaN(prix)) {
+      montrerErreur("Le prix doit être un nombre, par exemple 35 ou 12,50.");
+      $("fPrix").focus();
+      return;
+    }
+    // Le temps et le chrono viennent de la fiche telle qu'elle est maintenant, pas telle qu'elle était à l'ouverture.
+    const vivant = brouillon.id ? trouver(brouillon.id) : null;
+    let tempsMs = vivant ? vivant.tempsMs : 0;
+    let chronoDepuis = vivant ? vivant.chronoDepuis : "";
+    if (tempsModifie && !chronoDepuis) {
+      const t = lireTemps();
+      if (t == null) {
+        montrerErreur("Le temps passé doit être en chiffres, par exemple 1 h et 30 min.");
+        $("fHeures").focus();
+        return;
+      }
+      tempsMs = t;
+    }
+    ajouterFourniture(); // une fourniture tapée mais pas encore ajoutée n'est pas perdue
+
+    const maintenant = new Date().toISOString();
+    const fait = brouillon.id ? $("fFait").checked : false;
+    const etaitFait = vivant ? estFait(vivant) : false;
+    const paye = $("fPaye").checked;
+    const etaitPaye = vivant ? vivant.paye : false;
+    if (fait && chronoDepuis) {
+      tempsMs += Math.max(0, Date.now() - Date.parse(chronoDepuis));
+      chronoDepuis = "";
+    }
+    const quandValeur = $("fQuand").value;
+    const r = enregistrer({
+      id: brouillon.id,
+      titre: titre,
+      pourQui: $("fQui").value.trim(),
+      echeance: RE_DATE.test(quandValeur) ? quandValeur : "",
+      statut: fait ? "termine" : "a-faire",
+      termineLe: fait ? (etaitFait && vivant.termineLe ? vivant.termineLe : maintenant) : "",
+      prix: prix,
+      paye: paye,
+      payeLe: paye ? (etaitPaye && vivant.payeLe ? vivant.payeLe : maintenant) : "",
+      tempsMs: tempsMs,
+      chronoDepuis: chronoDepuis,
+      fournitures: brouillon.fournitures.map((f) => ({ nom: f.nom, ok: f.ok })),
+      notes: $("fNotes").value.trim(),
+      creeLe: brouillon.creeLe,
+    });
+    if (!r.ok) {
+      montrerErreur(r.message);
+      return;
+    }
+    fermerDialogue(feuille);
+    if (fait && !etaitFait) feterFin(null, true);
+    else if (paye && !etaitPaye && prix) feterPaye(null, prix, true);
+    else annoncer("Projet enregistré");
+  });
+
+  $("btnAnnuler").addEventListener("click", () => fermerDialogue(feuille));
+  $("btnSuppr").addEventListener("click", () => {
+    $("btnSuppr").hidden = true;
+    $("supprConfirme").hidden = false;
+    $("btnSupprNon").focus();
+  });
+  $("btnSupprNon").addEventListener("click", () => {
+    $("supprConfirme").hidden = true;
+    $("btnSuppr").hidden = false;
+  });
+  $("btnSupprOui").addEventListener("click", () => {
+    if (!brouillon || !brouillon.id) return;
+    const r = supprimer(brouillon.id);
+    if (!r.ok) { montrerErreur(r.message); return; }
+    fermerDialogue(feuille);
+    annoncer("Projet supprimé");
+  });
+
+  /* ---------- Taux horaire ---------- */
+  function ouvrirTaux() {
+    $("fTaux").value = state.taux ? String(state.taux).replace(".", ",") : "";
+    $("tauxErreur").hidden = true;
+    ouvrirDialogue(tauxFeuille);
+    $("fTaux").focus();
+  }
+  $("btnTaux").addEventListener("click", ouvrirTaux);
+  $("btnTauxAnnuler").addEventListener("click", () => fermerDialogue(tauxFeuille));
+  $("formTaux").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const n = lireEuros($("fTaux").value);
+    const montrer = (msg) => { $("tauxErreur").textContent = msg; $("tauxErreur").hidden = false; };
+    if (n === null || isNaN(n) || n <= 0) {
+      montrer("Indiquez un montant par heure, par exemple 15.");
+      $("fTaux").focus();
+      return;
+    }
+    const avant = state.taux;
+    state.taux = n;
+    if (!ecrire()) { state.taux = avant; montrer(REFUS); return; }
+    fermerDialogue(tauxFeuille);
+    render();
+    if (!feuille.open) annoncer("Taux horaire : " + euros(n) + " / h");
+  });
+
+  /* ---------- Sauvegarde et restauration ---------- */
+  $("btnSauver").addEventListener("click", async () => {
+    const maintenant = new Date();
+    const contenu = JSON.stringify({ type: "carnet-atelier", version: 1, exporteLe: maintenant.toISOString(), taux: state.taux, projets: state.projets }, null, 2);
+    const nom = "carnet-atelier-" + isoLocal(maintenant);
+    let partage = false;
+    try {
+      // Sur iPhone : la feuille de partage (Fichiers, Notes, Messages…).
+      const essais = [new File([contenu], nom + ".json", { type: "application/json" }), new File([contenu], nom + ".txt", { type: "text/plain" })];
+      const fichier = essais.find((f) => navigator.canShare && navigator.canShare({ files: [f] }));
+      if (fichier) {
+        await navigator.share({ files: [fichier], title: "Sauvegarde du carnet d'atelier" });
+        partage = true;
+      }
+    } catch (e) {
+      if (e && e.name === "AbortError") return; // partage annulé : pas de sauvegarde
+    }
+    if (!partage) {
+      const url = URL.createObjectURL(new Blob([contenu], { type: "application/json" }));
+      const lien = el("a", { href: url, download: nom + ".json" });
+      document.body.append(lien);
+      lien.click();
+      lien.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }
+    state.sauvegardeLe = maintenant.toISOString();
+    ecrire();
+    render();
+    annoncer("Sauvegarde faite", "Gardez ce fichier en lieu sûr");
+  });
+
+  let aRestaurer = null;
+  $("fRestaurer").addEventListener("change", async (e) => {
+    const fichier = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!fichier) return;
+    let d = null;
+    try { d = JSON.parse(await fichier.text()); } catch (err) { d = null; }
+    if (!d || !Array.isArray(d.projets)) {
+      annoncer("Ce fichier n'est pas une sauvegarde du carnet.");
+      return;
+    }
+    aRestaurer = { projets: projetsValides(d.projets), taux: tauxValide(d.taux) };
+    const n = aRestaurer.projets.length, m = state.projets.length;
+    $("restaurerTexte").textContent = "La sauvegarde contient " + n + (n > 1 ? " projets" : " projet")
+      + ". Elle remplacera " + (m > 1 ? "les " + m + " projets" : m === 1 ? "le projet" : "le carnet vide") + " de cet appareil.";
+    ouvrirDialogue(restaurerFeuille);
+  });
+  $("btnRestaurerNon").addEventListener("click", () => fermerDialogue(restaurerFeuille));
+  $("formRestaurer").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!aRestaurer) return;
+    const avant = { projets: state.projets, taux: state.taux };
+    state.projets = aRestaurer.projets;
+    if (aRestaurer.taux) state.taux = aRestaurer.taux;
+    fermerDialogue(restaurerFeuille);
+    if (!ecrire()) {
+      state.projets = avant.projets;
+      state.taux = avant.taux;
+      annoncer(REFUS);
+      return;
+    }
+    aRestaurer = null;
+    render();
+    annoncer("Sauvegarde restaurée");
+  });
+
+  /* ---------- Actions de la page ---------- */
+  $("btnNouveau").addEventListener("click", () => ouvrirFeuille(null));
+
+  $("liste").addEventListener("click", (e) => {
+    const cible = (attr) => {
+      const n = e.target.closest("[" + attr + "]");
+      return n && !n.disabled ? n : null;
+    };
+    let n;
+    if ((n = cible("data-finir"))) { terminer(n.getAttribute("data-finir"), n); return; }
+    if ((n = cible("data-chrono-btn"))) { basculerChrono(n.getAttribute("data-chrono-btn")); return; }
+    if ((n = cible("data-payer"))) { payer(n.getAttribute("data-payer"), n); return; }
+    if ((n = cible("data-temps"))) {
+      const p = trouver(n.getAttribute("data-temps"));
+      if (p) ouvrirFeuille(p, "fHeures");
+      return;
+    }
+    if ((n = cible("data-fixer"))) {
+      const p = trouver(n.getAttribute("data-fixer"));
+      if (p) ouvrirFeuille(p, "fPrix");
+      return;
+    }
+    if ((n = cible("data-ouvrir"))) {
+      const p = trouver(n.getAttribute("data-ouvrir"));
+      if (p) ouvrirFeuille(p);
+    }
+  });
+
+  $("btnChronoArret").addEventListener("click", () => {
+    const id = $("btnChronoArret").getAttribute("data-id");
+    if (id) basculerChrono(id);
+  });
+
+  $("onglets").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-vue]");
+    if (!b) return;
+    state.vue = b.getAttribute("data-vue");
+    render();
+  });
+
+  // Au retour sur la page (le lendemain, par exemple), la date et les chiffres se remettent à jour.
+  function majDate() {
+    $("dateJour").textContent = capitale(fmtLong.format(new Date()));
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) { majDate(); render(); }
+  });
+  // Si le carnet est ouvert dans deux onglets, ils restent d'accord.
+  window.addEventListener("storage", (e) => {
+    if (e.key !== CLE) return;
+    charger();
+    render();
+  });
+
+  /* ---------- Démarrage ---------- */
+  charger();
+  majDate();
+  render();
+
+  // Sur iPhone, dans Safari : inviter à installer le carnet avant de commencer.
+  const surIphone = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const installe = window.navigator.standalone === true || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+  $("astuce").hidden = !(surIphone && !installe);
+
+  // Demander à l'appareil de ne pas effacer les projets tout seul, et garder la page disponible hors connexion.
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
