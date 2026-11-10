@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Carnet d'atelier</title>
+<title>Atelier de Memette</title>
 <meta name="robots" content="noindex">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -91,6 +91,7 @@ button:disabled { cursor: default; opacity: .5; }
 .tete { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
 .tete > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); letter-spacing: -.02em; }
+h1 .signature { color: var(--accent); }
 .taux {
   flex: none; min-height: 44px; padding: 0 16px; border: 0; border-radius: 22px;
   background: var(--surface-2); font-size: 15px; font-weight: 600; white-space: nowrap;
@@ -206,6 +207,7 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
 /* Sauvegarde */
 .garde { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 18px; text-align: center; }
 .garde p { margin: 0; font-size: 14px; color: var(--ink-soft); text-wrap: balance; }
+.garde .puces { justify-content: center; }
 
 /* Quai : chrono en cours + bouton d'ajout, sous le pouce */
 .quai {
@@ -408,6 +410,50 @@ dialog.petit p { margin: 0; }
 .actions .annuler { background: var(--surface-2); }
 .actions .valider { background: var(--accent); color: var(--accent-ink); }
 
+/* Bienvenue : le prénom la première fois, puis « Bonjour » ou « Bonsoir » à l'ouverture, sur un fond flou */
+.accueil {
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 241, 245, .55);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
+  text-align: center; cursor: pointer;
+}
+.accueil-contenu { display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: 0; }
+.accueil-astre { display: grid; place-items: center; }
+.accueil-astre svg { display: block; width: 64px; height: 64px; }
+.accueil-salut { margin: 0; font: 800 clamp(40px, 12.5vw, 60px)/1.02 var(--font-display); letter-spacing: -.02em; }
+.accueil-salut span { display: block; }
+.accueil-salut .accueil-nom { color: var(--accent); overflow-wrap: anywhere; }
+dialog.bienvenue {
+  inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; border: 0;
+  padding: calc(16vh + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 241, 245, .6); color: var(--ink);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
+}
+/* Calé en haut : rien ne bouge sous le doigt quand un message apparaît, et le clavier ne cache rien. */
+dialog.bienvenue[open] { display: grid; align-items: start; justify-items: center; }
+dialog.bienvenue::backdrop { background: transparent; }
+.bienvenue form { width: min(360px, 100%); display: flex; flex-direction: column; gap: 14px; }
+.bienvenue h2 { margin: 0 0 8px; text-align: center; font: 800 clamp(34px, 10vw, 44px)/1.05 var(--font-display); letter-spacing: -.02em; }
+.bienvenue label { font-size: 14.5px; font-weight: 600; }
+.actions.seul { grid-template-columns: 1fr; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .accueil, dialog.bienvenue { background: rgba(255, 241, 245, .95); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .accueil { animation: accueil-entre .35s ease both; }
+  .accueil.part { animation: accueil-part .45s ease forwards; }
+  .accueil-astre { animation: astre .75s cubic-bezier(.3, 1.6, .5, 1) .05s both; }
+  .accueil-salut span { animation: salut-monte .6s cubic-bezier(.2, 1.2, .4, 1) .1s both; }
+  .accueil-salut span + span { animation-delay: .22s; }
+  dialog.bienvenue[open] { animation: accueil-entre .35s ease both; }
+  @keyframes accueil-entre { from { opacity: 0; } }
+  @keyframes accueil-part { to { opacity: 0; } }
+  @keyframes astre { from { opacity: 0; transform: scale(.4) rotate(-45deg); } }
+  @keyframes salut-monte { from { opacity: 0; transform: translateY(18px); } }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .onglet, .taux, .chrono-btn, .payer, .fixer, .tag-paye, .ajouter, .puce, .coche-fin, .chrono-barre button, .actions button, .enregistrer {
     transition: transform .12s ease, background-color .15s ease;
@@ -476,7 +522,7 @@ dialog.petit p { margin: 0; }
     <header class="tete">
       <div>
         <p class="etiquette" id="dateJour">Aujourd'hui</p>
-        <h1>Carnet d'atelier</h1>
+        <h1>Atelier de <span class="signature">Memette</span></h1>
       </div>
       <button type="button" class="taux" id="btnTaux">Taux horaire</button>
     </header>
@@ -512,6 +558,7 @@ dialog.petit p { margin: 0; }
         <button type="button" class="puce" id="btnSauver">Sauvegarder</button>
         <label class="puce" for="fRestaurer">Restaurer</label>
         <input class="sr" type="file" id="fRestaurer" accept="application/json,text/plain,.json,.txt">
+        <button type="button" class="puce" id="btnPrenom">Mon prénom</button>
       </div>
     </footer>
   </section>
@@ -712,6 +759,35 @@ dialog.petit p { margin: 0; }
   </form>
 </dialog>
 
+<dialog class="bienvenue" id="prenomFeuille" aria-labelledby="prenomTitre">
+  <form id="formPrenom" novalidate>
+    <h2 id="prenomTitre">Bienvenue</h2>
+    <label for="fPrenom" id="prenomLib">Votre prénom</label>
+    <input class="saisie" type="text" id="fPrenom" maxlength="40" autocomplete="given-name" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-label="Votre prénom">
+    <p class="erreur" id="prenomErreur" role="alert" hidden></p>
+    <div class="actions" id="prenomActions">
+      <button type="button" class="annuler" id="btnPrenomAnnuler">Annuler</button>
+      <button type="submit" class="valider" id="btnPrenomOk">C'est parti</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="accueil" id="accueil" role="status" hidden>
+  <div class="accueil-contenu">
+    <span class="accueil-astre" aria-hidden="true">
+      <svg id="accueilSoleil" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="12" fill="#F2B929"/>
+        <path d="M32 5v8M32 51v8M5 32h8M51 32h8M12.9 12.9l5.7 5.7M45.4 45.4l5.7 5.7M12.9 51.1l5.7-5.7M45.4 18.6l5.7-5.7" stroke="#F2B929" stroke-width="4.5" stroke-linecap="round"/>
+      </svg>
+      <svg id="accueilLune" viewBox="0 0 64 64" hidden>
+        <path d="M38 8a25 25 0 1 0 20 37A21 21 0 0 1 38 8z" fill="#F2B929"/>
+        <path d="M50 12l1.8 4.2L56 18l-4.2 1.8L50 24l-1.8-4.2L44 18l4.2-1.8z" fill="#FF8FB1"/>
+      </svg>
+    </span>
+    <p class="accueil-salut"><span id="accueilMot">Bonjour</span> <span class="accueil-nom" id="accueilNom"></span></p>
+  </div>
+</div>
+
 <script>
 (function () {
   "use strict";
@@ -724,6 +800,7 @@ dialog.petit p { margin: 0; }
   const state = {
     projets: [],
     taux: null,        // taux horaire en euros, ou null s'il n'est pas réglé
+    prenom: "",        // pour dire bonjour à l'ouverture
     sauvegardeLe: "",  // date de la dernière sauvegarde
     vue: "a-faire",    // a-faire | termines
     bloque: false,     // vrai si l'appareil refuse d'enregistrer
@@ -845,6 +922,7 @@ dialog.petit p { margin: 0; }
       const d = JSON.parse(brut);
       state.projets = projetsValides(d.projets);
       state.taux = tauxValide(d.taux);
+      state.prenom = str(d.prenom).trim().slice(0, 40);
       state.sauvegardeLe = str(d.sauvegardeLe);
     } catch (e) {
       // Données illisibles : on les met de côté plutôt que de les écraser.
@@ -853,7 +931,7 @@ dialog.petit p { margin: 0; }
   }
   function ecrire() {
     try {
-      localStorage.setItem(CLE, JSON.stringify({ version: 1, taux: state.taux, sauvegardeLe: state.sauvegardeLe, projets: state.projets }));
+      localStorage.setItem(CLE, JSON.stringify({ version: 1, taux: state.taux, prenom: state.prenom, sauvegardeLe: state.sauvegardeLe, projets: state.projets }));
       return true;
     } catch (e) {
       return false;
@@ -1803,6 +1881,69 @@ dialog.petit p { margin: 0; }
     render();
   });
 
+  /* ---------- Bienvenue : le prénom, puis « Bonjour » ou « Bonsoir » ---------- */
+  const prenomFeuille = $("prenomFeuille");
+  let premiereFois = false;
+  function ouvrirPrenom(premiere) {
+    premiereFois = premiere;
+    $("prenomTitre").textContent = premiere ? "Bienvenue" : "Votre prénom";
+    $("prenomLib").hidden = !premiere;
+    $("btnPrenomAnnuler").hidden = premiere;
+    $("prenomActions").classList.toggle("seul", premiere);
+    $("btnPrenomOk").textContent = premiere ? "C'est parti" : "Enregistrer";
+    $("fPrenom").value = state.prenom;
+    $("prenomErreur").hidden = true;
+    ouvrirDialogue(prenomFeuille);
+    $("fPrenom").focus();
+  }
+  $("btnPrenom").addEventListener("click", () => ouvrirPrenom(false));
+  $("btnPrenomAnnuler").addEventListener("click", () => fermerDialogue(prenomFeuille));
+  // La première fois, le prénom est demandé : la touche Échap ne ferme pas.
+  prenomFeuille.addEventListener("cancel", (e) => { if (premiereFois) e.preventDefault(); });
+  $("formPrenom").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const n = $("fPrenom").value.trim().replace(/\s+/g, " ");
+    const montrer = (msg) => { $("prenomErreur").textContent = msg; $("prenomErreur").hidden = false; };
+    if (!n) {
+      montrer("Indiquez votre prénom.");
+      $("fPrenom").focus();
+      return;
+    }
+    const avant = state.prenom;
+    state.prenom = n;
+    if (!ecrire()) { state.prenom = avant; montrer(REFUS); return; }
+    fermerDialogue(prenomFeuille);
+    saluer();
+  });
+
+  let minuteurSalut = 0;
+  function saluer() {
+    if (!state.prenom) return;
+    const h = new Date().getHours();
+    const soir = h >= 18 || h < 5;
+    $("accueilMot").textContent = soir ? "Bonsoir" : "Bonjour";
+    $("accueilNom").textContent = state.prenom;
+    // Un dessin SVG n'a pas de propriété « hidden » : on pose l'attribut lui-même.
+    $("accueilSoleil").toggleAttribute("hidden", soir);
+    $("accueilLune").toggleAttribute("hidden", !soir);
+    const a = $("accueil");
+    clearTimeout(minuteurSalut);
+    a.classList.remove("part");
+    a.hidden = false;
+    minuteurSalut = setTimeout(finSalut, reduit.matches ? 1600 : 2400);
+  }
+  function finSalut() {
+    const a = $("accueil");
+    if (a.hidden || a.classList.contains("part")) return;
+    clearTimeout(minuteurSalut);
+    if (reduit.matches) { a.hidden = true; return; }
+    a.classList.add("part");
+    minuteurSalut = setTimeout(() => { a.hidden = true; a.classList.remove("part"); }, 450);
+  }
+  // Un appui fait partir le message tout de suite.
+  $("accueil").addEventListener("click", finSalut);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") finSalut(); });
+
   /* ---------- Sauvegarde et restauration ---------- */
   $("btnSauver").addEventListener("click", async () => {
     const maintenant = new Date();
@@ -1916,8 +2057,14 @@ dialog.petit p { margin: 0; }
   function majDate() {
     $("dateJour").textContent = capitale(fmtLong.format(new Date()));
   }
+  // Après une longue absence (plus de 30 min), le carnet redit bonjour.
+  let partiLe = 0;
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) { majDate(); render(); }
+    if (document.hidden) { partiLe = Date.now(); return; }
+    majDate();
+    render();
+    if (partiLe && Date.now() - partiLe > 30 * 60000 && !document.querySelector("dialog[open]")) saluer();
+    partiLe = 0;
   });
   // Si le carnet est ouvert dans deux onglets, ils restent d'accord.
   window.addEventListener("storage", (e) => {
@@ -1935,6 +2082,12 @@ dialog.petit p { margin: 0; }
   const surIphone = /iPhone|iPad|iPod/.test(navigator.userAgent);
   const installe = window.navigator.standalone === true || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
   $("astuce").hidden = !(surIphone && !installe);
+
+  // Sur iPhone, l'app de l'écran d'accueil a sa propre mémoire : le prénom se demande dans l'app, pas avant.
+  if (!state.bloque && $("astuce").hidden) {
+    if (state.prenom) saluer();
+    else ouvrirPrenom(true);
+  }
 
   // Demander à l'appareil de ne pas effacer les projets tout seul, et garder la page disponible hors connexion.
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
