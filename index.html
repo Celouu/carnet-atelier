@@ -618,7 +618,12 @@ dialog.petit p { margin: 0; }
       </div>
 
       <div class="champ">
-        <label for="fQuand">Pour quand ?</label>
+        <label for="fCommande">Commandé le</label>
+        <input class="saisie" type="date" id="fCommande">
+      </div>
+
+      <div class="champ">
+        <label for="fQuand">À rendre le</label>
         <div class="puces" id="pucesDate">
           <button type="button" class="puce" data-jours="7">Dans 1 semaine</button>
           <button type="button" class="puce" data-jours="14">Dans 2 semaines</button>
@@ -805,6 +810,9 @@ dialog.petit p { margin: 0; }
       titre: str(d.titre),
       pourQui: str(d.pourQui),
       echeance: RE_DATE.test(str(d.echeance)) ? d.echeance : "",
+      // Date de la commande, modifiable. Les anciens projets prennent leur date de création.
+      commandeLe: RE_DATE.test(str(d.commandeLe)) ? d.commandeLe
+        : !isNaN(Date.parse(str(d.creeLe))) ? isoLocal(new Date(d.creeLe)) : "",
       statut: fait ? "termine" : "a-faire",
       termineLe: fait ? (str(d.termineLe) || str(d.majLe)) : "",
       prix: typeof d.prix === "number" && isFinite(d.prix) && d.prix >= 0 ? d.prix : null,
@@ -1385,7 +1393,7 @@ dialog.petit p { margin: 0; }
   let empreinteInitiale = "";
   function empreinte() {
     return JSON.stringify([
-      $("fTitre").value, $("fQui").value, $("fQuand").value, $("fPrix").value, $("fPaye").checked, $("fFait").checked,
+      $("fTitre").value, $("fQui").value, $("fCommande").value, $("fQuand").value, $("fPrix").value, $("fPaye").checked, $("fFait").checked,
       $("fNotes").value, $("fFournNom").value, tempsModifie ? [$("fHeures").value, $("fMinutes").value] : null,
       brouillon ? brouillon.fournitures : null,
     ]);
@@ -1474,13 +1482,14 @@ dialog.petit p { margin: 0; }
   function ouvrirFeuille(p, champAFocaliser) {
     brouillon = p
       ? JSON.parse(JSON.stringify(p))
-      : { id: "", titre: "", pourQui: "", echeance: "", statut: "a-faire", termineLe: "", prix: null, paye: false, payeLe: "",
+      : { id: "", titre: "", pourQui: "", echeance: "", commandeLe: isoLocal(new Date()), statut: "a-faire", termineLe: "", prix: null, paye: false, payeLe: "",
           tempsMs: 0, chronoDepuis: "", fournitures: [], notes: "", creeLe: "", majLe: "" };
     tempsModifie = false;
     $("feuilleTitre").textContent = p ? "Modifier" : "Nouveau projet";
     $("fTitre").value = brouillon.titre;
     $("fQui").value = brouillon.pourQui;
     $("fQuand").value = brouillon.echeance;
+    $("fCommande").value = brouillon.commandeLe || isoLocal(new Date());
     $("fPrix").value = brouillon.prix == null ? "" : String(brouillon.prix).replace(".", ",");
     $("fPaye").checked = brouillon.paye;
     $("fFait").checked = estFait(brouillon);
@@ -1617,12 +1626,14 @@ dialog.petit p { margin: 0; }
       chronoDepuis = "";
     }
     const quandValeur = $("fQuand").value;
+    const commandeValeur = $("fCommande").value;
     if (!brouillon.id) state.vue = "a-faire"; // un nouveau projet s'affiche là où on peut le voir
     const r = enregistrer({
       id: brouillon.id,
       titre: titre,
       pourQui: $("fQui").value.trim(),
       echeance: RE_DATE.test(quandValeur) ? quandValeur : "",
+      commandeLe: RE_DATE.test(commandeValeur) ? commandeValeur : (brouillon.commandeLe || isoLocal(new Date())),
       statut: fait ? "termine" : "a-faire",
       termineLe: fait ? (etaitFait && vivant.termineLe ? vivant.termineLe : maintenant) : "",
       prix: prix,
