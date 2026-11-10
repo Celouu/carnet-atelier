@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Atelier de Memette</title>
+<title>Atelier</title>
 <meta name="robots" content="noindex">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -92,7 +92,7 @@ button:disabled { cursor: default; opacity: .5; }
 /* En-tête */
 .tete { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
 .tete > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); letter-spacing: -.02em; }
+h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); letter-spacing: -.02em; overflow-wrap: break-word; }
 h1 .signature { color: var(--accent); }
 .taux {
   flex: none; min-height: 44px; padding: 0 16px; border: 0; border-radius: 22px;
@@ -524,7 +524,7 @@ dialog.bienvenue::backdrop { background: transparent; }
     <header class="tete">
       <div>
         <p class="etiquette" id="dateJour">Aujourd'hui</p>
-        <h1>Atelier de <span class="signature">Memette</span></h1>
+        <h1 id="titreAtelier">Atelier</h1>
       </div>
       <button type="button" class="taux" id="btnTaux">Taux horaire</button>
     </header>
@@ -1411,7 +1411,29 @@ dialog.bienvenue::backdrop { background: transparent; }
       : "Aucune sauvegarde";
   }
 
+  // « de Marie », mais « d'Anne », « d'Hélène », « d'Yves »
+  function liaison(prenom) {
+    const p = prenom.toLowerCase();
+    const voyelle = "aeiouyàâäéèêëîïôöùûüÿæœ";
+    const c0 = p.charAt(0), c1 = p.charAt(1);
+    const elide = (voyelle.includes(c0) && !(c0 === "y" && voyelle.includes(c1))) || (c0 === "h" && voyelle.includes(c1));
+    return elide ? "d'" : "de ";
+  }
+  // Le titre : « Atelier » tant qu'aucun prénom n'est enregistré, puis « Atelier de » + le prénom.
+  function renderTitre() {
+    const h = $("titreAtelier");
+    if (state.prenom) {
+      const lien = liaison(state.prenom);
+      remplir(h, ["Atelier " + lien, el("span", { class: "signature", text: state.prenom })]);
+      document.title = "Atelier " + lien + state.prenom;
+    } else {
+      h.textContent = "Atelier";
+      document.title = "Atelier";
+    }
+  }
+
   function render() {
+    renderTitre();
     $("etat").hidden = !state.bloque;
     if (state.bloque) $("etat").textContent = "Enregistrement impossible ici (navigation privée ?). Ouvrez le carnet depuis son icône.";
     $("quai").hidden = state.bloque;
@@ -1915,6 +1937,7 @@ dialog.bienvenue::backdrop { background: transparent; }
     state.prenom = n;
     if (!ecrire()) { state.prenom = avant; montrer(REFUS); return; }
     fermerDialogue(prenomFeuille);
+    renderTitre();
     saluer();
   });
 
@@ -2085,8 +2108,8 @@ dialog.bienvenue::backdrop { background: transparent; }
   const installe = window.navigator.standalone === true || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
   $("astuce").hidden = !(surIphone && !installe);
 
-  // Sur iPhone, l'app de l'écran d'accueil a sa propre mémoire : le prénom se demande dans l'app, pas avant.
-  if (!state.bloque && $("astuce").hidden) {
+  // Dès la première ouverture : le prénom est demandé tant qu'il n'est pas enregistré.
+  if (!state.bloque) {
     if (state.prenom) saluer();
     else ouvrirPrenom(true);
   }
