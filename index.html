@@ -881,7 +881,7 @@ dialog.petit p { margin: 0; }
     clearTimeout(minuteurBravo);
     annulerCourant = annuler || null;
     $("bravoAnnuler").hidden = !annuler;
-    minuteurBravo = setTimeout(() => { b.hidden = true; annulerCourant = null; }, annuler ? 6000 : ton ? 3600 : 3000);
+    minuteurBravo = setTimeout(() => { b.hidden = true; annulerCourant = null; }, annuler ? 8000 : ton ? 3600 : 3000);
   }
 
   $("bravoAnnuler").addEventListener("click", () => {
