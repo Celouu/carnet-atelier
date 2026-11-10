@@ -150,16 +150,6 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
 .etat { padding: 14px 16px; border-radius: 16px; background: var(--late-bg); color: var(--late); font-weight: 600; }
 .vide { padding: 36px 16px; text-align: center; text-wrap: balance; }
 
-/* Carnet vide : les trois gestes à connaître */
-.guide { display: flex; flex-direction: column; gap: 16px; padding: 22px 20px; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); }
-.guide-titre { margin: 0; font: 700 18.5px/1.25 var(--font-display); }
-.guide ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
-.guide li { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: center; font-size: 15px; color: var(--ink-soft); }
-.guide li strong { font-weight: 600; color: var(--ink); }
-.g-ico { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--surface-2); color: var(--ink); font-size: 20px; font-weight: 600; line-height: 1; }
-.g-ico svg { display: block; width: 16px; height: 16px; fill: currentColor; }
-.g-ico.rond-vide { width: 30px; height: 30px; margin: 3px; background: none; border: 2px solid var(--line-strong); }
-
 /* Feuille : question avant d'abandonner des changements, et second bouton d'enregistrement en bas */
 .abandon {
   flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
@@ -218,7 +208,6 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
   display: flex; flex-direction: column; justify-content: center; gap: 1px; min-height: 44px; padding: 0 6px;
   border: 0; border-radius: 10px; background: none; text-align: left;
 }
-.t-lib { font-size: 12px; line-height: 1.2; color: var(--ink-soft); }
 .t-val { font-size: 15.5px; line-height: 1.2; font-weight: 700; font-variant-numeric: tabular-nums; }
 .prix { margin-left: auto; font-size: 16.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .prix.conseil { font-size: 14.5px; font-weight: 500; color: var(--ink-soft); }
@@ -408,7 +397,6 @@ details.plus[open] > summary::after { transform: rotate(-135deg); }
 .fourn-ajout .puce { min-height: 52px; border-radius: 14px; }
 
 .suppr { display: flex; flex-direction: column; gap: 12px; padding-top: 18px; border-top: 1px solid var(--line); }
-.suppr p { margin: 0; font-weight: 600; }
 .suppr-choix { display: flex; flex-wrap: wrap; gap: 10px; }
 .lien-danger { align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: none; font-weight: 700; color: var(--late); }
 .danger { min-height: 48px; padding: 0 20px; border: 0; border-radius: 24px; background: var(--late); color: var(--surface); font-weight: 700; }
@@ -501,8 +489,8 @@ dialog.petit p { margin: 0; }
     </header>
 
     <aside class="astuce" id="astuce" hidden>
-      <strong>À faire en premier</strong>
-      <p>Touchez le bouton Partager de Safari, puis « Sur l'écran d'accueil ». Ouvrez ensuite le carnet depuis son icône : c'est là que vos projets seront gardés. Ceux notés ici, dans Safari, ne suivront pas.</p>
+      <strong>Installez d'abord le carnet</strong>
+      <p>Partager, puis « Sur l'écran d'accueil ». Ouvrez-le ensuite depuis l'icône.</p>
     </aside>
 
     <section class="mois" aria-labelledby="moisTitre">
@@ -524,19 +512,11 @@ dialog.petit p { margin: 0; }
     <p class="etat" id="etat" role="alert" hidden></p>
     <ul class="fiches" id="liste"></ul>
     <p class="vide" id="vide" hidden></p>
-    <div class="guide" id="guide" hidden>
-      <p class="guide-titre">Le carnet est vide. Trois gestes suffisent.</p>
-      <ul>
-        <li><span class="g-ico" aria-hidden="true">+</span><span><strong>Nouveau projet</strong>, en bas de l'écran, pour noter une commande. Seul le nom est obligatoire.</span></li>
-        <li><span class="g-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span><span><strong>Chrono</strong>, sur la fiche, pour compter le temps passé.</span></li>
-        <li><span class="g-ico rond-vide" aria-hidden="true"></span><span><strong>Le rond</strong>, à gauche de la fiche, quand le projet est fini.</span></li>
-      </ul>
-    </div>
 
     <footer class="garde" id="garde">
-      <p id="gardeTexte">Vos projets sont gardés sur cet appareil.</p>
+      <p id="gardeTexte"></p>
       <div class="puces">
-        <button type="button" class="puce" id="btnSauver">Faire une sauvegarde</button>
+        <button type="button" class="puce" id="btnSauver">Sauvegarder</button>
         <label class="puce" for="fRestaurer">Restaurer</label>
         <input class="sr" type="file" id="fRestaurer" accept="application/json,text/plain,.json,.txt">
       </div>
@@ -629,12 +609,12 @@ dialog.petit p { margin: 0; }
 
       <div class="champ">
         <label for="fTitre">Quoi ?</label>
-        <input class="saisie" type="text" id="fTitre" maxlength="120" autocomplete="off" enterkeyhint="next" placeholder="Trousse de toilette, housse de coussin…">
+        <input class="saisie" type="text" id="fTitre" maxlength="120" autocomplete="off" enterkeyhint="next">
       </div>
 
       <div class="champ">
         <label for="fQui">Pour qui ?</label>
-        <input class="saisie" type="text" id="fQui" maxlength="120" autocomplete="off" enterkeyhint="next" placeholder="Une voisine, une collègue…">
+        <input class="saisie" type="text" id="fQui" maxlength="120" autocomplete="off" enterkeyhint="next">
       </div>
 
       <div class="champ">
@@ -646,12 +626,10 @@ dialog.petit p { margin: 0; }
           <button type="button" class="puce" data-jours="">Pas de date</button>
         </div>
         <input class="saisie" type="date" id="fQuand">
-        <p class="aide" id="quandAide" hidden></p>
       </div>
 
       <div class="champ" id="blocTemps">
         <span class="lib">Temps passé</span>
-        <p class="aide">Le chrono le remplit tout seul. Vous pouvez aussi l'écrire ou le corriger à la main.</p>
         <div class="note-chrono" id="chronoNote" hidden>
           <span>Chrono en cours : <span id="chronoNoteTemps"></span></span>
           <button type="button" class="puce forte" id="btnChronoStop">Arrêter</button>
@@ -665,7 +643,7 @@ dialog.petit p { margin: 0; }
       <div class="champ">
         <label for="fPrix">Prix</label>
         <div class="avec-unite">
-          <input class="saisie" type="text" id="fPrix" inputmode="decimal" autocomplete="off" enterkeyhint="done" placeholder="35">
+          <input class="saisie" type="text" id="fPrix" inputmode="decimal" autocomplete="off" enterkeyhint="done">
           <span aria-hidden="true">€</span>
         </div>
         <div class="puces"><button type="button" class="puce forte" id="btnConseil" hidden></button></div>
@@ -673,21 +651,20 @@ dialog.petit p { margin: 0; }
       </div>
 
       <label class="rangee" for="fPaye"><span>Déjà payé</span><input type="checkbox" class="interrupteur" id="fPaye"></label>
-      <label class="rangee" for="fFait" id="rangeeFait" hidden><span>Projet terminé</span><input type="checkbox" class="interrupteur" id="fFait"></label>
+      <label class="rangee" for="fFait" id="rangeeFait" hidden><span>Terminé</span><input type="checkbox" class="interrupteur" id="fFait"></label>
 
       <details class="plus" id="plus">
         <summary>Mesures, notes et fournitures</summary>
         <div class="plus-corps">
           <div class="champ">
             <label for="fNotes">Mesures et notes</label>
-            <textarea class="saisie" id="fNotes" maxlength="4000" placeholder="45 × 45 cm, velours côtelé, passepoil…"></textarea>
+            <textarea class="saisie" id="fNotes" maxlength="4000"></textarea>
           </div>
           <div class="champ">
             <span class="lib">Fournitures</span>
-            <p class="aide">Cochez ce que vous avez déjà. Le reste s'affiche « à acheter » sur la fiche.</p>
             <ul class="fourn" id="fournListe" hidden></ul>
             <div class="fourn-ajout">
-              <input class="saisie" type="text" id="fFournNom" maxlength="120" autocomplete="off" enterkeyhint="done" aria-label="Fourniture à ajouter" placeholder="Fermeture 25 cm, biais…">
+              <input class="saisie" type="text" id="fFournNom" maxlength="120" autocomplete="off" enterkeyhint="done" aria-label="Fourniture à ajouter">
               <button type="button" class="puce" id="btnFournAjout">Ajouter</button>
             </div>
           </div>
@@ -698,12 +675,9 @@ dialog.petit p { margin: 0; }
 
       <div class="suppr" id="zoneSuppr" hidden>
         <button type="button" class="lien-danger" id="btnSuppr">Supprimer ce projet</button>
-        <div id="supprConfirme" hidden>
-          <p>Supprimer ce projet pour de bon ?</p>
-          <div class="suppr-choix" style="margin-top: 12px;">
-            <button type="button" class="danger" id="btnSupprOui">Oui, supprimer</button>
-            <button type="button" class="discret" id="btnSupprNon">Non, le garder</button>
-          </div>
+        <div class="suppr-choix" id="supprConfirme" hidden>
+          <button type="button" class="danger" id="btnSupprOui">Supprimer</button>
+          <button type="button" class="discret" id="btnSupprNon">Garder</button>
         </div>
       </div>
     </div>
@@ -713,9 +687,8 @@ dialog.petit p { margin: 0; }
 <dialog class="petit" id="tauxFeuille" aria-labelledby="tauxTitre">
   <form id="formTaux" novalidate>
     <h2 id="tauxTitre">Taux horaire</h2>
-    <p class="aide">Il sert à proposer un prix : le temps passé multiplié par ce taux.</p>
     <div class="avec-unite">
-      <input class="saisie" type="text" id="fTaux" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="Taux horaire en euros" placeholder="15">
+      <input class="saisie" type="text" id="fTaux" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="Taux horaire en euros">
       <span aria-hidden="true">€ / h</span>
     </div>
     <p class="erreur" id="tauxErreur" role="alert" hidden></p>
@@ -878,7 +851,7 @@ dialog.petit p { margin: 0; }
       return false;
     }
   }
-  const REFUS = "Enregistrement impossible : l'appareil refuse d'écrire. Faites de la place, puis réessayez.";
+  const REFUS = "Enregistrement impossible. Libérez de la place, puis réessayez.";
 
   function enregistrer(p) {
     const maintenant = new Date().toISOString();
@@ -1156,23 +1129,22 @@ dialog.petit p { margin: 0; }
   const finisCeMois = () => state.projets.filter((p) => estFait(p) && dansCeMois(p.termineLe)).length;
   const encaisseCeMois = () => Math.round(state.projets.reduce((s, p) => s + (p.paye && p.prix && dansCeMois(p.payeLe) ? p.prix : 0), 0) * 100) / 100;
 
-  // idExclu : la fiche en train d'être terminée ou payée, pas encore enregistrée comme telle.
+  // idExclu : la fiche en train d'être terminée, pas encore enregistrée comme telle.
   function feterFin(origine, dejaCompte, annuler, idExclu) {
     const c = centreDe(origine);
     confettis(c.x, c.y, "fin");
     const toutFait = state.projets.filter((p) => !estFait(p) && p.id !== idExclu).length === 0;
     if (toutFait) confettis(window.innerWidth / 2, window.innerHeight * 0.3, "fin"); // seconde gerbe : il ne reste plus rien à faire
     const rang = ordinal(finisCeMois() + (dejaCompte ? 0 : 1)) + " projet fini en " + moisCourant();
-    annoncer(toutFait ? "Tout est fait !" : "Terminé !", toutFait ? rang + ". Plus rien en attente." : rang, "fin", annuler);
+    annoncer(toutFait ? "Tout est fait !" : "Terminé !", rang, "fin", annuler);
   }
-  function feterPaye(origine, prix, dejaCompte, annuler, idExclu) {
+  function feterPaye(origine, prix, dejaCompte, annuler) {
     const c = centreDe(origine);
     confettis(c.x, c.y, "paye");
     pluieBillets();
     moneyMoney();
     const total = Math.round((encaisseCeMois() + (dejaCompte ? 0 : prix)) * 100) / 100;
-    const resteDu = state.projets.some((p) => estFait(p) && !p.paye && p.prix && p.id !== idExclu);
-    annoncer("+ " + euros(prix), (resteDu ? "" : "Tout est encaissé. ") + euros(total) + " encaissés en " + moisCourant(), "paye", annuler);
+    annoncer("+ " + euros(prix), euros(total) + " encaissés en " + moisCourant(), "paye", annuler);
   }
 
   /* ---------- Rendu ---------- */
@@ -1212,7 +1184,6 @@ dialog.petit p { margin: 0; }
   function blocTemps(p) {
     const tourne = !!p.chronoDepuis;
     return el("button", { type: "button", class: "temps-bloc", "data-temps": p.id, "aria-label": "Temps passé : " + dureeCourte(tempsTotal(p)) + ". Modifier" },
-      el("span", { class: "t-lib", text: "Temps passé" }),
       el("span", { class: "t-val", "data-chrono": tourne ? p.id : null, text: tourne ? horloge(tempsTotal(p)) : dureeCourte(p.tempsMs) }));
   }
 
@@ -1222,10 +1193,9 @@ dialog.petit p { margin: 0; }
     const total = tempsTotal(p);
     const manquent = p.fournitures.filter((f) => !f.ok);
 
-    const sous = el("span", { class: "fiche-sous" },
+    const sous = p.pourQui || q ? el("span", { class: "fiche-sous" },
       p.pourQui ? el("span", { class: "qui", text: "Pour " + p.pourQui }) : null,
-      q ? el("span", { class: "quand" + (q.cls ? " " + q.cls : ""), text: p.pourQui ? q.court : q.seul }) : null,
-      !p.pourQui && !q ? el("span", { text: "Sans date" }) : null);
+      q ? el("span", { class: "quand" + (q.cls ? " " + q.cls : ""), text: p.pourQui ? q.court : q.seul }) : null) : null;
 
     const ouvrir = el("button", { type: "button", class: "fiche-ouvrir", "data-ouvrir": p.id },
       el("span", { class: "fiche-titre", text: p.titre || "Projet sans nom" }),
@@ -1259,7 +1229,7 @@ dialog.petit p { margin: 0; }
     const pied = el("div", { class: "fiche-pied" }, blocTemps(p));
     const conseil = p.prix == null ? prixConseille(p.tempsMs) : null;
     if (p.prix != null) pied.append(el("span", { class: "prix", text: euros(p.prix) }));
-    else if (conseil != null) pied.append(el("span", { class: "prix conseil", text: "Conseillé : " + euros(conseil) }));
+    else if (conseil != null) pied.append(el("span", { class: "prix conseil", text: "≈ " + euros(conseil) }));
     if (p.paye) pied.append(el("span", { class: "tag-paye" + (state.pop === p.id ? " pop" : "") }, icone("coche"), "Payé"));
     else if (p.prix != null) pied.append(el("button", { type: "button", class: "payer", "data-payer": p.id, text: "Marquer payé" }));
     else pied.append(el("button", { type: "button", class: "fixer", "data-fixer": p.id, text: "Fixer le prix" }));
@@ -1287,13 +1257,12 @@ dialog.petit p { margin: 0; }
 
     let msg = "";
     if (visibles.length === 0) {
-      if (state.projets.length === 0) msg = ""; // carnet vide : le guide des trois gestes s'affiche à la place
-      else if (state.vue === "termines") msg = "Rien de terminé pour l'instant. Cochez le rond d'une fiche quand elle est finie.";
-      else msg = "Tout est fait. Rien en attente.";
+      if (state.projets.length === 0) msg = state.bloque ? "" : "Aucun projet";
+      else if (state.vue === "termines") msg = "Rien de terminé";
+      else msg = "Tout est fait !";
     }
     $("vide").textContent = msg;
     $("vide").hidden = !msg;
-    $("guide").hidden = state.projets.length > 0 || state.bloque;
   }
 
   function renderChrono() {
@@ -1309,13 +1278,14 @@ dialog.petit p { margin: 0; }
 
   function renderGarde() {
     $("garde").hidden = state.bloque;
-    $("gardeTexte").textContent = "Vos projets sont gardés sur cet appareil. "
-      + (state.sauvegardeLe ? "Dernière sauvegarde : le " + fmtCourt.format(new Date(state.sauvegardeLe)) + "." : "Aucune sauvegarde pour l'instant.");
+    $("gardeTexte").textContent = state.sauvegardeLe
+      ? "Dernière sauvegarde : " + fmtCourt.format(new Date(state.sauvegardeLe))
+      : "Aucune sauvegarde";
   }
 
   function render() {
     $("etat").hidden = !state.bloque;
-    if (state.bloque) $("etat").textContent = "Ce navigateur refuse d'enregistrer les projets (navigation privée ?). Ouvrez le carnet depuis son icône, ou hors navigation privée.";
+    if (state.bloque) $("etat").textContent = "Enregistrement impossible ici (navigation privée ?). Ouvrez le carnet depuis son icône.";
     $("quai").hidden = state.bloque;
     renderBilan();
     renderOnglets();
@@ -1348,7 +1318,7 @@ dialog.petit p { margin: 0; }
     if (p.chronoDepuis) {
       const t = tempsTotal(p);
       if (enregistrerVite(chronoArrete(p))) {
-        annoncer("Chrono arrêté", duree(t) + " sur ce projet" + (t - p.tempsMs > 8 * 3600000 ? ". Un oubli ? Corrigez le temps dans la fiche." : ""));
+        annoncer("Chrono arrêté", duree(t));
       }
       return;
     }
@@ -1371,7 +1341,6 @@ dialog.petit p { margin: 0; }
       const actuel = trouver(id);
       if (actuel && estFait(actuel)) enregistrerVite(avant); // déjà rangée dans « Terminés » : on la remet comme avant
       else render();
-      annoncer("Remis dans « À faire »");
     }, id);
     setTimeout(() => {
       const vivant = trouver(id);
@@ -1386,8 +1355,8 @@ dialog.petit p { margin: 0; }
     setTimeout(() => { if (state.pop === id) state.pop = null; }, 1200);
     feterPaye(bouton, p.prix, false, () => {
       arreterArgent();
-      if (enregistrerVite(p)) annoncer("Paiement annulé");
-    }, id);
+      enregistrerVite(p);
+    });
     enregistrerVite(Object.assign({}, p, { paye: true, payeLe: new Date().toISOString() }));
   }
 
@@ -1431,7 +1400,7 @@ dialog.petit p { margin: 0; }
     fermerDialogue(feuille);
   }
 
-  // Sous la date : le jour en toutes lettres, et le raccourci choisi reste allumé.
+  // Le raccourci de date choisi reste allumé.
   function majQuand() {
     const v = $("fQuand").value;
     for (const b of $("pucesDate").querySelectorAll("[data-jours]")) {
@@ -1444,12 +1413,6 @@ dialog.petit p { margin: 0; }
       }
       b.setAttribute("aria-pressed", String(v === cible));
     }
-    const aide = $("quandAide");
-    if (!RE_DATE.test(v)) { aide.hidden = true; return; }
-    const n = ecartJours(v);
-    aide.textContent = capitale(fmtLong.format(deIso(v)))
-      + (n === 0 ? ", aujourd'hui" : n === 1 ? ", demain" : n > 1 ? ", dans " + n + " jours" : ", date déjà passée");
-    aide.hidden = false;
   }
   $("fQuand").addEventListener("input", majQuand);
   $("fQuand").addEventListener("change", majQuand);
@@ -1495,21 +1458,16 @@ dialog.petit p { margin: 0; }
     const bouton = $("btnConseil"), aide = $("conseilAide");
     const ms = tempsDeLaFeuille();
     const conseil = prixConseille(ms);
-    aide.hidden = false;
+    bouton.hidden = !!state.taux && conseil == null;
+    aide.hidden = conseil == null;
     if (!state.taux) {
-      bouton.hidden = false;
       bouton.textContent = "Régler mon taux horaire";
       bouton.setAttribute("data-action", "taux");
-      aide.textContent = "Avec un taux horaire, le prix se calcule tout seul à partir du temps passé.";
-    } else if (conseil == null) {
-      bouton.hidden = true;
-      aide.textContent = "Lancez le chrono ou notez le temps passé : le prix conseillé à " + euros(state.taux) + " / h s'affichera ici.";
-    } else {
-      bouton.hidden = false;
+    } else if (conseil != null) {
       bouton.textContent = "Mettre " + euros(conseil);
       bouton.setAttribute("data-action", "prix");
       bouton.setAttribute("data-valeur", String(conseil));
-      aide.textContent = "Prix conseillé : " + duree(ms) + " à " + euros(state.taux) + " / h.";
+      aide.textContent = duree(ms) + " × " + euros(state.taux) + " / h";
     }
   }
 
@@ -1624,13 +1582,13 @@ dialog.petit p { margin: 0; }
     if (!brouillon) return;
     const titre = $("fTitre").value.trim();
     if (!titre) {
-      montrerErreur("Donnez un nom au projet, par exemple « Trousse de toilette ».");
+      montrerErreur("Donnez un nom au projet.");
       $("fTitre").focus();
       return;
     }
     const prix = lireEuros($("fPrix").value);
     if (prix !== null && isNaN(prix)) {
-      montrerErreur("Le prix doit être un nombre, par exemple 35 ou 12,50.");
+      montrerErreur("Le prix doit être un nombre.");
       $("fPrix").focus();
       return;
     }
@@ -1641,7 +1599,7 @@ dialog.petit p { margin: 0; }
     if (tempsModifie && !chronoDepuis) {
       const t = lireTemps();
       if (t == null) {
-        montrerErreur("Le temps passé doit être en chiffres, par exemple 1 h et 30 min.");
+        montrerErreur("Le temps doit être en chiffres.");
         $("fHeures").focus();
         return;
       }
@@ -1683,7 +1641,6 @@ dialog.petit p { margin: 0; }
     fermerDialogue(feuille);
     if (fait && !etaitFait) feterFin(null, true);
     else if (paye && !etaitPaye && prix) feterPaye(null, prix, true);
-    else annoncer("Projet enregistré");
   });
 
   $("btnAnnuler").addEventListener("click", demanderFermeture);
@@ -1705,7 +1662,7 @@ dialog.petit p { margin: 0; }
     const r = supprimer(brouillon.id);
     if (!r.ok) { montrerErreur(r.message); return; }
     fermerDialogue(feuille);
-    annoncer("Projet supprimé", "", "", efface ? () => { if (enregistrerVite(efface)) annoncer("Projet remis dans le carnet"); } : null);
+    annoncer("Projet supprimé", "", "", efface ? () => { enregistrerVite(efface); } : null);
   });
 
   /* ---------- Taux horaire ---------- */
@@ -1722,7 +1679,7 @@ dialog.petit p { margin: 0; }
     const n = lireEuros($("fTaux").value);
     const montrer = (msg) => { $("tauxErreur").textContent = msg; $("tauxErreur").hidden = false; };
     if (n === null || isNaN(n) || n <= 0) {
-      montrer("Indiquez un montant par heure, par exemple 15.");
+      montrer("Indiquez un montant.");
       $("fTaux").focus();
       return;
     }
@@ -1731,7 +1688,6 @@ dialog.petit p { margin: 0; }
     if (!ecrire()) { state.taux = avant; montrer(REFUS); return; }
     fermerDialogue(tauxFeuille);
     render();
-    if (!feuille.open) annoncer("Taux horaire : " + euros(n) + " / h");
   });
 
   /* ---------- Sauvegarde et restauration ---------- */
@@ -1762,7 +1718,7 @@ dialog.petit p { margin: 0; }
     state.sauvegardeLe = maintenant.toISOString();
     ecrire();
     render();
-    annoncer("Sauvegarde faite", "Gardez ce fichier en lieu sûr");
+    annoncer("Sauvegarde faite");
   });
 
   let aRestaurer = null;
@@ -1778,8 +1734,9 @@ dialog.petit p { margin: 0; }
     }
     aRestaurer = { projets: projetsValides(d.projets), taux: tauxValide(d.taux) };
     const n = aRestaurer.projets.length, m = state.projets.length;
-    $("restaurerTexte").textContent = "La sauvegarde contient " + n + (n > 1 ? " projets" : " projet")
-      + ". Elle remplacera " + (m > 1 ? "les " + m + " projets" : m === 1 ? "le projet" : "le carnet vide") + " de cet appareil.";
+    const nb = n + (n > 1 ? " projets" : " projet");
+    $("restaurerTexte").textContent = m === 0 ? nb + "."
+      : nb + (n > 1 ? " remplaceront " : " remplacera ") + (m > 1 ? "les " + m + " actuels." : "le projet actuel.");
     ouvrirDialogue(restaurerFeuille);
   });
   $("btnRestaurerNon").addEventListener("click", () => fermerDialogue(restaurerFeuille));
