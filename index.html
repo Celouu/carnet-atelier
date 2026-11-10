@@ -292,6 +292,11 @@ h1 { margin: 0; font: 800 clamp(26px, 7.4vw, 32px)/1.05 var(--font-display); let
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   transform: translate(-50%, -50%); pointer-events: none;
 }
+.money::before {
+  content: ""; position: absolute; left: 50%; top: 42%; z-index: -1; width: 112%; aspect-ratio: 1;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: radial-gradient(closest-side, var(--bg) 60%, var(--bg-0));
+}
 .money-chat { width: 64%; transform-origin: 50% 95%; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .22)); }
 .money-chat svg { display: block; width: 100%; height: auto; overflow: visible; }
 .money-chat .eventail { transform-box: view-box; transform-origin: 116px 102px; }
